@@ -8,7 +8,6 @@
   <!-- ── SEO básico ── -->
   <meta name="description" content="Análisis diario de Gamma Exposure (GEX) y Delta Exposure (DEX) sobre opciones del DAX en Eurex (ODAX): perfil por strike, call wall, put wall y zero gamma por vencimiento, semanales incluidos." />
   <meta name="keywords" content="GEX DAX, gamma exposure DAX, opciones DAX, ODAX, Eurex, zero gamma DAX, call wall, put wall" />
-  <meta name="author" content="No Queda Otra Opción" />
   <meta name="robots" content="index, follow" />
 
   <!-- ── Canonical ── -->
@@ -17,14 +16,7 @@
   <meta property="og:type"        content="website" />
   <meta property="og:title"       content="GEX DAX · Gamma Exposure opciones DAX (Eurex)" />
   <meta property="og:description" content="Gamma Exposure (GEX) diario sobre opciones del DAX en Eurex: perfil por strike, call wall, put wall y zero gamma." />
-  <meta property="og:site_name"   content="No Queda Otra Opción" />
   <meta property="og:locale"      content="es_ES" />
-
-  <!-- ── Twitter / X Card ── -->
-  <meta name="twitter:card"        content="summary" />
-  <meta name="twitter:title"       content="GEX DAX · Gamma Exposure opciones DAX (Eurex)" />
-  <meta name="twitter:description" content="Gamma Exposure (GEX) diario sobre opciones del DAX en Eurex." />
-  <meta name="twitter:site"        content="@noquedaotraopcion" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -611,7 +603,6 @@
 <!-- ── Header ── -->
 <div class="header">
   <h1>
-    <span class="brand">NO QUEDA OTRA OPCIÓN</span>
     <span class="dot">·</span>
     <span class="subbrand">DAX</span>
     <span class="dot">·</span>
@@ -623,7 +614,7 @@
       <span class="dot-pulse"></span>
       <span class="dot-pulse"></span>
     </span>
-    <span class="meta-update">Actualización: diaria con la sesión anterior de Eurex · <a href="https://gammaibex.noquedaotraopcion.com/" style="color:var(--accent);text-decoration:none">Ver IBEX (MEFF) →</a></span>
+    <span class="meta-update">Actualización: diaria con la sesión anterior de Eurex · </a></span>
   </div>
   <button class="ham-btn" onclick="hamOpen()" aria-label="Menú">
     <span></span><span></span><span></span>
@@ -643,9 +634,6 @@
     <button class="ham-nav-btn"        id="hbtn-dex"      onclick="hamSwitch('dex')">
       <span class="ham-nav-icon">Δ</span> DEX
     </button>
-    <a class="ham-nav-btn" href="https://gammaibex.noquedaotraopcion.com/" style="text-decoration:none">
-      <span class="ham-nav-icon">↩</span> GEX IBEX (MEFF)
-    </a>
     <button class="ham-nav-btn"        id="hbtn-glosario" onclick="hamSwitch('glosario')">
       <span class="ham-nav-icon">≡</span> GLOSARIO
     </button>
@@ -1895,27 +1883,6 @@ loadAll();
   <p>La pestaña GEX muestra el perfil de gamma por strike del DAX: el Call Wall es el nivel con mayor concentración de gamma de calls y el Put Wall el de puts. Al elegir un vencimiento, los niveles (call wall, put wall, zero gamma) se recalculan solo con ese vencimiento. La pestaña DEX replica el análisis para delta. El Glosario explica cada concepto.</p>
 </details>
 
-<!-- ── Footer ── -->
-<div class="footer">
-  <div class="footer-line">
-    Tasa libre de riesgo BCE: <span id="footer-tasa">2,5%</span>
-    &nbsp;·&nbsp; Vencimientos semanales y mensuales · 5 €/punto
-    &nbsp;·&nbsp; Fuente: Eurex (ODAX) · IV y spot implícitos calculados
-    &nbsp;·&nbsp; GEX = Gamma × OI × Multiplicador × Spot²
-  </div>
-  <div class="footer-line">
-    * Todos los vencimientos
-    &nbsp;·&nbsp; <a href="mailto:joseantonio@noquedaotraopcion.com">joseantonio@noquedaotraopcion.com</a>
-  </div>
-  <div class="footer-line footer-cta">
-    🌐 <a href="https://noquedaotraopcion.com" target="_blank" rel="noopener">noquedaotraopcion.com</a>
-    &nbsp;·&nbsp;
-    ▶ <a href="https://youtube.com/@noquedaotraopcion" target="_blank" rel="noopener">Canal de YouTube</a>
-    &nbsp;·&nbsp;
-    ✉ <a href="https://noquedaotraopcion.substack.com" target="_blank" rel="noopener">Newsletter Substack</a>
-    &nbsp;·&nbsp; Análisis diario de opciones sobre el mercado español
-  </div>
-</div>
 
 </body>
 </html>
