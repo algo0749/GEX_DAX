@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GEX DAX · Gamma Exposure opciones DAX (Eurex) | No Queda Otra Opción</title>
+
+  <!-- ── SEO básico ── -->
+  <meta name="description" content="Análisis diario de Gamma Exposure (GEX) y Delta Exposure (DEX) sobre opciones del DAX en Eurex (ODAX): perfil por strike, call wall, put wall y zero gamma por vencimiento, semanales incluidos." />
+  <meta name="keywords" content="GEX DAX, gamma exposure DAX, opciones DAX, ODAX, Eurex, zero gamma DAX, call wall, put wall" />
+  <meta name="author" content="No Queda Otra Opción" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- ── Canonical ── -->
+
+  <!-- ── Open Graph (LinkedIn, WhatsApp, Facebook) ── -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="GEX DAX · Gamma Exposure opciones DAX (Eurex)" />
+  <meta property="og:description" content="Gamma Exposure (GEX) diario sobre opciones del DAX en Eurex: perfil por strike, call wall, put wall y zero gamma." />
+  <meta property="og:site_name"   content="No Queda Otra Opción" />
+  <meta property="og:locale"      content="es_ES" />
+
+  <!-- ── Twitter / X Card ── -->
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="GEX DAX · Gamma Exposure opciones DAX (Eurex)" />
+  <meta name="twitter:description" content="Gamma Exposure (GEX) diario sobre opciones del DAX en Eurex." />
+  <meta name="twitter:site"        content="@noquedaotraopcion" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #050508;
+      --bg2:        #0d0d14;
+      --bg3:        #13131e;
+      --border:     #1e1e2e;
+      --border2:    #2a2a40;
+      --text:       #e2e8f0;
+      --muted:      #64748b;
+      --call:       #22c55e;
+      --call-dim:   rgba(34,197,94,.15);
+      --put:        #ef4444;
+      --put-dim:    rgba(239,68,68,.15);
+      --spot:       #f59e0b;
+      --spot-dim:   rgba(245,158,11,.15);
+      --violet:     #a78bfa;
+      --violet-dim: rgba(167,139,250,.15);
+      --accent:     #6366f1;
+      --cyan:       #06b6d4;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      flex-shrink: 0;
+    }
+    .header h1 { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .brand     { font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: .06em; }
+    .subbrand  { font-size: 16px; font-weight: 600; color: var(--text);   letter-spacing: .05em; }
+    .dot       { color: var(--muted); font-size: 14px; }
+    .title     { font-size: 14px; font-weight: 400; color: var(--muted); letter-spacing: .04em; }
+    .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .meta-fecha   { font-size: 10px; color: var(--muted); white-space: nowrap; }
+    .meta-update  { font-size: 9px; color: var(--muted); opacity: .65; white-space: nowrap; letter-spacing: .03em; }
+
+    /* ── Footer ── */
+    .footer {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      background: var(--bg2);
+      padding: 8px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: center;
+      text-align: center;
+    }
+    .footer-line {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .03em;
+      line-height: 1.5;
+    }
+    .footer-line a { color: var(--accent); text-decoration: none; }
+    .footer-line a:hover { text-decoration: underline; }
+    .footer-cta a { color: var(--spot); text-decoration: none; font-weight: 600; }
+    .footer-cta a:hover { text-decoration: underline; }
+
+    /* ── Tab nav ── */
+    .tab-nav {
+      display: flex;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      flex-shrink: 0;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 11px 20px;
+      letter-spacing: .06em;
+      transition: color .15s, border-color .15s;
+    }
+    .tab-btn:hover  { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-icon { margin-right: 6px; font-size: 13px; }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      gap: 14px;
+      padding: 12px 28px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+    .control-group { display: flex; flex-direction: column; gap: 4px; }
+    .control-group label { font-size: 9px; color: var(--muted); letter-spacing: .07em; }
+    select {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      min-width: 155px;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+
+    /* ── Toggle buttons ── */
+    .toggle-group { display: flex; }
+    .toggle-btn {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 5px 13px;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+    .toggle-btn:first-child { border-radius: 4px 0 0 4px; }
+    .toggle-btn:last-child  { border-radius: 0 4px 4px 0; }
+    .toggle-btn:not(:first-child) { border-left: none; }
+    .toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── KPI strip ── */
+    .kpi-strip {
+      display: flex;
+      gap: 8px;
+      padding: 12px 28px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .kpi-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 9px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 110px;
+      flex: 1;
+    }
+    .kpi-card .lbl { font-size: 9px; color: var(--muted); letter-spacing: .07em; }
+    .kpi-card .val { font-size: 17px; font-weight: 600; line-height: 1.2; }
+    .kpi-card .sub { font-size: 9px; color: var(--muted); }
+    .c-spot   { color: var(--spot); }
+    .c-call   { color: var(--call); }
+    .c-put    { color: var(--put);  }
+    .c-violet { color: var(--violet); }
+    .c-muted  { color: var(--muted); }
+    .c-cyan   { color: var(--cyan); }
+
+    /* ── Info button + tooltip ── */
+    .lbl-with-info { display: flex; align-items: center; gap: 5px; }
+    .kpi-info-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      font-size: 7px; font-weight: 700;
+      cursor: help;
+      position: relative;
+      flex-shrink: 0;
+      transition: border-color .15s, color .15s;
+      line-height: 1;
+    }
+    .kpi-info-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .kpi-info-btn:hover .kpi-tooltip { display: block; }
+    .kpi-tooltip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 12px 14px;
+      width: 250px;
+      font-size: 9.5px; line-height: 1.7;
+      color: var(--text);
+      z-index: 999;
+      white-space: normal;
+      text-align: left;
+      pointer-events: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,.6);
+    }
+    .kpi-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--border2);
+    }
+    .kpi-tooltip-title {
+      font-size: 8px; font-weight: 700;
+      color: var(--accent); letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+    .kpi-tooltip-sep { border: none; border-top: 1px solid var(--border2); margin: 6px 0; }
+    .kpi-tooltip-row { display: flex; gap: 6px; margin-bottom: 3px; }
+    .kpi-tooltip-badge { flex-shrink: 0; font-weight: 700; font-size: 8px; }
+
+    /* Colores ratio C/P */
+    .ratio-call    { color: var(--call) !important; }
+    .ratio-neutral { color: var(--spot) !important; }
+    .ratio-put     { color: var(--put)  !important; }
+
+    /* ── Tab content ── */
+    .tab-content { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+    .tab-content.active { display: flex; }
+
+    /* ── Chart wrap ── */
+    .chart-wrap {
+      flex: 1; padding: 10px 28px 20px;
+      min-height: 0; position: relative;
+    }
+    canvas { width: 100% !important; }
+
+    /* ── Table wrap ── */
+    .table-wrap { flex: 1; padding: 0 28px 20px; overflow: auto; min-height: 0; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .data-table thead { position: sticky; top: 0; z-index: 10; background: var(--bg2); }
+    .data-table thead tr { border-bottom: 2px solid var(--border2); }
+    .data-table th {
+      padding: 9px 12px; text-align: right;
+      color: var(--muted); font-size: 9px; letter-spacing: .07em;
+      cursor: pointer; user-select: none; white-space: nowrap; font-weight: 500;
+    }
+    .data-table th:first-child { text-align: left; padding-left: 16px; }
+    .data-table th:hover { color: var(--text); }
+    .data-table td {
+      padding: 6px 12px; text-align: right;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    .data-table td:first-child { text-align: left; padding-left: 16px; }
+    .data-table tr:hover td { background: var(--bg3) !important; }
+    .row-spot td { background: rgba(245,158,11,.06); }
+    .row-cw   td { background: rgba(34,197,94,.06);  }
+    .row-pw   td { background: rgba(239,68,68,.06);  }
+
+    /* ── Strike cell ── */
+    .strike-cell { display: flex; flex-direction: column; gap: 1px; }
+    .strike-main { display: flex; align-items: center; gap: 5px; font-weight: 500; font-size: 11px; }
+    .strike-pct  { font-size: 8px; color: var(--muted); padding-left: 1px; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 1px 4px; border-radius: 3px;
+      font-size: 7px; font-weight: 700; letter-spacing: .04em; vertical-align: middle;
+    }
+    .badge-spot { background: rgba(245,158,11,.2); color: var(--spot); }
+    .badge-cw   { background: rgba(34,197,94,.2);  color: var(--call); }
+    .badge-pw   { background: rgba(239,68,68,.2);  color: var(--put); }
+
+    /* ── IV cell ── */
+    .iv-cell { display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
+    .iv-bar-wrap { width: 40px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .iv-bar { height: 100%; border-radius: 2px; }
+    .iv-num { font-size: 10px; min-width: 36px; text-align: right; }
+
+    /* ── Informes tab ── */
+    .informes-wrap {
+      flex: 1; padding: 20px 28px;
+      display: flex; flex-direction: column; gap: 18px; overflow: auto;
+    }
+    .informe-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px; }
+    .informe-header {
+      font-size: 9px; color: var(--accent); letter-spacing: .1em;
+      margin-bottom: 14px; text-transform: uppercase; font-weight: 600;
+    }
+    .informe-pre {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      color: var(--text); white-space: pre; overflow-x: auto; line-height: 1.65;
+    }
+    .informe-empty { font-size: 12px; color: var(--muted); font-style: normal; }
+
+    /* ── Glosario tab ── */
+    .glosario-wrap {
+      flex: 1; padding: 24px 28px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+      gap: 14px;
+      overflow-y: auto;
+      align-content: start;
+    }
+    .glosario-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color .15s;
+    }
+    .glosario-card:hover { border-color: var(--border2); }
+    .glosario-term {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .glosario-icon {
+      font-size: 15px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .glosario-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .09em;
+      color: var(--accent);
+    }
+    .glosario-subtitle {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .06em;
+    }
+    .glosario-body {
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.75;
+      opacity: .85;
+    }
+    .glosario-body strong { color: var(--text); opacity: 1; font-weight: 600; }
+    .glosario-body .hl-call   { color: var(--call); font-weight: 600; }
+    .glosario-body .hl-put    { color: var(--put);  font-weight: 600; }
+    .glosario-body .hl-spot   { color: var(--spot); font-weight: 600; }
+    .glosario-body .hl-violet { color: var(--violet); font-weight: 600; }
+    .glosario-body .hl-cyan   { color: var(--cyan); font-weight: 600; }
+    .glosario-divider {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0;
+    }
+    .glosario-divider-label {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .1em;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    .glosario-divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Error overlay ── */
+    .err-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(5,5,8,.85);
+      justify-content: center; align-items: center; z-index: 100;
+    }
+    .err-overlay.show { display: flex; }
+    .err-box {
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 32px 40px; max-width: 480px; text-align: center;
+    }
+    .err-box h2 { color: var(--put); font-size: 16px; margin-bottom: 12px; }
+    .err-box p  { font-size: 12px; color: var(--muted); line-height: 1.8; }
+    .err-box code {
+      display: inline-block; margin-top: 16px; background: var(--bg3);
+      color: var(--accent); padding: 8px 16px; border-radius: 4px; font-size: 12px;
+    }
+
+    /* ── Loading pulse ── */
+    @keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:.9} }
+    .dot-pulse {
+      display: inline-block; width: 6px; height: 6px;
+      border-radius: 50%; background: var(--accent);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .dot-pulse:nth-child(2){animation-delay:.2s}
+    .dot-pulse:nth-child(3){animation-delay:.4s}
+
+    ::-webkit-scrollbar       { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    /* ── Hamburger button (oculto en desktop) ── */
+    .ham-btn {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      margin-left: 10px;
+      flex-shrink: 0;
+    }
+    .ham-btn span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: background .15s;
+    }
+    .ham-btn:hover span { background: var(--accent); }
+
+    /* ── Drawer overlay ── */
+    .ham-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(5,5,8,.65);
+      z-index: 300;
+      backdrop-filter: blur(2px);
+    }
+    .ham-overlay.open { display: block; }
+    .ham-drawer {
+      position: absolute;
+      top: 0; right: 0;
+      width: 230px;
+      height: 100%;
+      background: var(--bg2);
+      border-left: 1px solid var(--border2);
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 20px;
+      box-shadow: -8px 0 32px rgba(0,0,0,.5);
+    }
+    .ham-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ham-drawer-title {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .1em;
+      font-weight: 600;
+    }
+    .ham-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      transition: background .15s, color .15s;
+    }
+    .ham-close:hover { background: var(--bg3); color: var(--text); }
+    .ham-nav-btn {
+      background: none;
+      border: none;
+      border-left: 3px solid transparent;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 15px 18px;
+      text-align: left;
+      letter-spacing: .06em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .ham-nav-btn:hover { background: var(--bg3); color: var(--text); }
+    .ham-nav-btn.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: rgba(99,102,241,.08);
+    }
+    .ham-nav-icon { font-size: 14px; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 700px) {
+
+      /* Layout: de altura-fija-100vh a flujo normal scrollable */
+      body {
+        overflow: auto;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      /* Mostrar hamburguesa, ocultar pestañas */
+      .ham-btn  { display: flex; }
+      .tab-nav  { display: none; }
+
+      /* Header compacto */
+      .header { padding: 10px 14px; }
+      .brand  { font-size: 12px; }
+      .subbrand { font-size: 12px; }
+      .dot    { font-size: 11px; }
+      .title  { display: none; }
+      .meta-update { display: none; }
+
+      /* Controls */
+      .controls { padding: 10px 14px; gap: 10px; }
+      select { min-width: 130px; font-size: 11px; }
+
+      /* KPI strip: scroll horizontal, sin wrap */
+      .kpi-strip {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 10px 14px;
+        gap: 8px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .kpi-strip::-webkit-scrollbar { display: none; }
+      .kpi-card { min-width: 90px; flex: 0 0 auto; }
+      .kpi-card .val { font-size: 14px; }
+
+      /* Tab content: fluye (no ocupa viewport fijo) */
+      .tab-content          { overflow: visible; height: auto; flex: none; }
+      .tab-content.active   { display: block; }
+
+      /* Gráfico: altura fija en móvil */
+      .chart-wrap {
+        height: 340px;
+        min-height: 340px;
+        flex: none;
+        padding: 10px 14px 16px;
+      }
+
+      /* Tabla */
+      .table-wrap { padding: 0 10px 16px; }
+
+      /* Informes */
+      .informes-wrap { padding: 14px 14px; }
+
+      /* Glosario */
+      .glosario-wrap { padding: 14px 14px; }
+
+      /* Footer */
+      .footer { padding: 8px 14px; }
+      .footer-line { font-size: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="header">
+  <h1>
+    <span class="brand">NO QUEDA OTRA OPCIÓN</span>
+    <span class="dot">·</span>
+    <span class="subbrand">DAX</span>
+    <span class="dot">·</span>
+    <span class="title">EUREX · GAMMA EXPOSURE</span>
+  </h1>
+  <div class="header-right">
+    <span class="meta-fecha" id="meta-fecha">
+      <span class="dot-pulse"></span>
+      <span class="dot-pulse"></span>
+      <span class="dot-pulse"></span>
+    </span>
+    <span class="meta-update">Actualización: diaria con la sesión anterior de Eurex · <a href="https://gammaibex.noquedaotraopcion.com/" style="color:var(--accent);text-decoration:none">Ver IBEX (MEFF) →</a></span>
+  </div>
+  <button class="ham-btn" onclick="hamOpen()" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+
+<!-- ── Hamburger menu drawer (mobile) ── -->
+<div class="ham-overlay" id="ham-overlay" onclick="hamClose()">
+  <div class="ham-drawer" onclick="event.stopPropagation()">
+    <div class="ham-drawer-header">
+      <span class="ham-drawer-title">NAVEGACIÓN</span>
+      <button class="ham-close" onclick="hamClose()" aria-label="Cerrar">✕</button>
+    </div>
+    <button class="ham-nav-btn active" id="hbtn-gex"      onclick="hamSwitch('gex')">
+      <span class="ham-nav-icon">γ</span> GEX
+    </button>
+    <button class="ham-nav-btn"        id="hbtn-dex"      onclick="hamSwitch('dex')">
+      <span class="ham-nav-icon">Δ</span> DEX
+    </button>
+    <a class="ham-nav-btn" href="https://gammaibex.noquedaotraopcion.com/" style="text-decoration:none">
+      <span class="ham-nav-icon">↩</span> GEX IBEX (MEFF)
+    </a>
+    <button class="ham-nav-btn"        id="hbtn-glosario" onclick="hamSwitch('glosario')">
+      <span class="ham-nav-icon">≡</span> GLOSARIO
+    </button>
+  </div>
+</div>
+
+<!-- ── Tab navigation ── -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('gex')" id="tbtn-gex">
+    <span class="tab-icon">γ</span>GEX
+  </button>
+  <button class="tab-btn" onclick="switchTab('dex')" id="tbtn-dex">
+    <span class="tab-icon">Δ</span>DEX
+  </button>
+  <button class="tab-btn" onclick="switchTab('glosario')" id="tbtn-glosario">
+    <span class="tab-icon">≡</span>GLOSARIO
+  </button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TAB 1 — GEX
+════════════════════════════════════════════════════════════════ -->
+<div id="tab-gex" class="tab-content active">
+
+  <div class="controls">
+    <div class="control-group">
+      <label>SUBYACENTE</label>
+      <select id="gex-sel-activo" onchange="gexOnActivoChange()"></select>
+    </div>
+    <div class="control-group">
+      <label>VENCIMIENTO</label>
+      <select id="gex-sel-vcto" onchange="gexRefresh()"></select>
+    </div>
+    <div class="control-group">
+      <label>MODO</label>
+      <div class="toggle-group">
+        <button class="toggle-btn" id="btn-net" onclick="gexSetMode('net')">Net GEX</button>
+        <button class="toggle-btn active" id="btn-cp" onclick="gexSetMode('callput')">Call/Put</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <label>VISTA</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="btn-graph" onclick="gexSetView('graph')">Graph</button>
+        <button class="toggle-btn" id="btn-table" onclick="gexSetView('table')">Table</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="lbl">SPOT</div>
+      <div class="val c-spot" id="gex-kpi-spot">—</div>
+      <div class="sub" id="gex-kpi-spot-sub">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl lbl-with-info">
+        NET GEX
+        <span class="kpi-info-btn">?
+          <div class="kpi-tooltip">
+            <div class="kpi-tooltip-title">RÉGIMEN GAMMA</div>
+            <div class="kpi-tooltip-row">
+              <span class="kpi-tooltip-badge" style="color:var(--call)">▲ POS.</span>
+              <span>Dealers son <strong>long gamma</strong>. Venden en subidas y compran en bajadas. Efecto estabilizador: amortigua volatilidad y tiende a precio en rango.</span>
+            </div>
+            <hr class="kpi-tooltip-sep"/>
+            <div class="kpi-tooltip-row">
+              <span class="kpi-tooltip-badge" style="color:var(--put)">▼ NEG.</span>
+              <span>Dealers son <strong>short gamma</strong>. Compran en subidas y venden en bajadas. Efecto amplificador: potencia movimientos y tendencias más persistentes.</span>
+            </div>
+            <hr class="kpi-tooltip-sep"/>
+            <div style="font-size:8.5px;color:var(--muted)">El Zero Gamma es el nivel de precio donde cambia el régimen. Cruzarlo puede cambiar radicalmente el carácter de la sesión.</div>
+          </div>
+        </span>
+      </div>
+      <div class="val" id="gex-kpi-net">—</div>
+      <div class="sub" id="gex-kpi-ratio">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">CALL GEX</div>
+      <div class="val c-call" id="gex-kpi-call">—</div>
+      <div class="sub" id="gex-kpi-call-oi">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">PUT GEX</div>
+      <div class="val c-put" id="gex-kpi-put">—</div>
+      <div class="sub" id="gex-kpi-put-oi">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">TOTAL GEX</div>
+      <div class="val c-cyan" id="gex-kpi-total">—</div>
+      <div class="sub" id="gex-kpi-total-oi">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">CALL WALL</div>
+      <div class="val c-call" id="gex-kpi-cw">—</div>
+      <div class="sub" id="gex-kpi-cw-pct">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">PUT WALL</div>
+      <div class="val c-put" id="gex-kpi-pw">—</div>
+      <div class="sub" id="gex-kpi-pw-pct">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl lbl-with-info">
+        ZERO GAMMA
+        <span class="kpi-info-btn">?
+          <div class="kpi-tooltip">
+            <div class="kpi-tooltip-title">NIVEL ZERO GAMMA</div>
+            <span>Precio donde el GEX neto transita entre régimen positivo y negativo.</span>
+            <hr class="kpi-tooltip-sep"/>
+            <div class="kpi-tooltip-row">
+              <span class="kpi-tooltip-badge" style="color:var(--call)">▲ POR ENCIMA</span>
+              <span>Régimen estabilizador. Los dealers actúan como amortiguadores del precio.</span>
+            </div>
+            <div class="kpi-tooltip-row">
+              <span class="kpi-tooltip-badge" style="color:var(--put)">▼ POR DEBAJO</span>
+              <span>Régimen amplificador. Los dealers refuerzan el movimiento del precio.</span>
+            </div>
+            <hr class="kpi-tooltip-sep"/>
+            <div style="font-size:8.5px;color:var(--muted)">Referencia de sesgo direccional: muchos traders abren posición según esté el precio respecto a este nivel al inicio de la sesión.</div>
+          </div>
+        </span>
+      </div>
+      <div class="val c-violet" id="gex-kpi-zg">—</div>
+      <div class="sub" id="gex-kpi-regime">—</div>
+    </div>
+  </div>
+
+  <div id="gex-graph-area" class="chart-wrap">
+    <canvas id="chart-gex"></canvas>
+  </div>
+
+  <div id="gex-table-area" class="table-wrap" style="display:none">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th onclick="gexTableSort('strike')">STRIKE <span id="sort-strike">↓</span></th>
+          <th onclick="gexTableSort('call_iv')">IV CALL <span id="sort-call_iv">↕</span></th>
+          <th onclick="gexTableSort('put_iv')">IV PUT <span id="sort-put_iv">↕</span></th>
+          <th onclick="gexTableSort('net_gex')">NET GEX <span id="sort-net_gex">↕</span></th>
+          <th onclick="gexTableSort('call_gex')">CALL GEX <span id="sort-call_gex">↕</span></th>
+          <th onclick="gexTableSort('put_gex')">PUT GEX <span id="sort-put_gex">↕</span></th>
+          <th onclick="gexTableSort('call_oi')">CALL OI <span id="sort-call_oi">↕</span></th>
+          <th onclick="gexTableSort('put_oi')">PUT OI <span id="sort-put_oi">↕</span></th>
+          <th onclick="gexTableSort('total_oi')">TOTAL OI <span id="sort-total_oi">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="gex-table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TAB DEX
+════════════════════════════════════════════════════════════════ -->
+<div id="tab-dex" class="tab-content">
+
+  <div class="controls">
+    <div class="control-group">
+      <label>SUBYACENTE</label>
+      <select id="dex-sel-activo" onchange="dexOnActivoChange()"></select>
+    </div>
+    <div class="control-group">
+      <label>VENCIMIENTO</label>
+      <select id="dex-sel-vcto" onchange="dexRefresh()"></select>
+    </div>
+    <div class="control-group">
+      <label>MODO</label>
+      <div class="toggle-group">
+        <button class="toggle-btn" id="dex-btn-net" onclick="dexSetMode('net')">Net DEX</button>
+        <button class="toggle-btn active" id="dex-btn-cp" onclick="dexSetMode('callput')">Call/Put</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="lbl">SPOT</div>
+      <div class="val c-spot" id="dex-kpi-spot">—</div>
+      <div class="sub" id="dex-kpi-spot-sub">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">NET DEX</div>
+      <div class="val" id="dex-kpi-net">—</div>
+      <div class="sub" id="dex-kpi-ratio">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">CALL DEX</div>
+      <div class="val c-call" id="dex-kpi-call">—</div>
+      <div class="sub" id="dex-kpi-call-oi">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">PUT DEX</div>
+      <div class="val c-put" id="dex-kpi-put">—</div>
+      <div class="sub" id="dex-kpi-put-oi">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">TOTAL DEX</div>
+      <div class="val c-cyan" id="dex-kpi-total">—</div>
+      <div class="sub" id="dex-kpi-total-oi">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">CALL WALL</div>
+      <div class="val c-call" id="dex-kpi-cw">—</div>
+      <div class="sub" id="dex-kpi-cw-pct">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">PUT WALL</div>
+      <div class="val c-put" id="dex-kpi-pw">—</div>
+      <div class="sub" id="dex-kpi-pw-pct">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">ZERO DELTA</div>
+      <div class="val c-cyan" id="dex-kpi-zd">—</div>
+      <div class="sub" id="dex-kpi-regime">—</div>
+    </div>
+  </div>
+
+  <div id="dex-graph-area" class="chart-wrap">
+    <canvas id="chart-dex"></canvas>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TAB GLOSARIO
+════════════════════════════════════════════════════════════════ -->
+<div id="tab-glosario" class="tab-content">
+  <div class="glosario-wrap">
+
+    <!-- BLOQUE GEX -->
+    <div class="glosario-divider">
+      <span class="glosario-divider-label">γ · GAMMA EXPOSURE</span>
+      <div class="glosario-divider-line"></div>
+    </div>
+
+    <div class="glosario-card">
+      <div class="glosario-term">
+        <span class="glosario-icon">γ</span>
+        <div>
+          <div class="glosario-title">GEX — GAMMA EXPOSURE</div>
+          <div class="glosario-subtitle">Presión de cobertura de los market makers sobre el precio</div>
+        </div>
+      </div>
+      <div class="glosario-body">
+        Los market makers (MM) que venden opciones quedan expuestos a <strong>gamma</strong>: cuando el mercado se mueve, su delta cambia y tienen que rebalancear su cobertura comprando o vendiendo el subyacente. El GEX agrega esa presión en cada nivel de precio.<br><br>
+        Un GEX alto en un strike significa que si el precio llega ahí, los MM generan mucha actividad de cobertura — lo que actúa como <strong>freno o acelerador</strong> del movimiento. No predice dirección, predice <em>resistencia al movimiento</em> o <em>amplificación de él</em>.
+      </div>
+    </div>
+
+    <div class="glosario-card">
+      <div class="glosario-term">
+        <span class="glosario-icon">⊕</span>
+        <div>
+          <div class="glosario-title">¿POR QUÉ CALL Y PUT POR SEPARADO?</div>
+          <div class="glosario-subtitle">Dos mecanismos de cobertura distintos</div>
+        </div>
+      </div>
+      <div class="glosario-body">
+        El gamma de una CALL y el de una PUT es positivo desde el punto de vista matemático, pero para el mercado importa cómo queda expuesto el dealer y qué lado domina en el posicionamiento agregado.<br><br>
+        Separar <span class="hl-call">CALL GEX</span> y <span class="hl-put">PUT GEX</span> permite ver dónde se concentra la sensibilidad de cobertura asociada a calls y puts. No significa que toda call sea resistencia ni toda put sea soporte por sí sola: el efecto depende del balance neto y de si el mercado está en régimen de gamma positiva o negativa.<br><br>
+        Cuando el <strong>Net GEX</strong> es positivo, la cobertura tiende a ser estabilizadora: los dealers compran caídas y venden subidas. Cuando el <strong>Net GEX</strong> es negativo, la cobertura puede amplificar el movimiento: compran subidas y venden caídas.<br><br>
+        Por eso conviene mirar ambas cosas: cada lado muestra dónde está la presión potencial; el neto indica si esa presión probablemente amortigua o acelera el precio.
+      </div>
+    </div>
+
+    <div class="glosario-card">
+      <div class="glosario-term">
+        <span class="glosario-icon">▲</span>
+        <div>
+          <div class="glosario-title">CALL WALL</div>
+          <div class="glosario-subtitle">Resistencia dinámica superior</div>
+        </div>
+      </div>
+      <div class="glosario-body">
+        El strike con mayor concentración de gamma de <span class="hl-call">CALLs</span>. Es un <strong>techo de resistencia</strong>: si el precio sube hacia ese nivel, los MM cubren vendiendo el subyacente, lo que frena el avance.<br><br>
+        Es un nivel dinámico — cambia con el open interest — no es soporte/resistencia técnica clásica. Tiene un <em>mecanismo detrás</em>.
+      </div>
+    </div>
+
+    <div class="glosario-card">
+      <div class="glosario-term">
+        <span class="glosario-icon">▼</span>
+        <div>
+          <div class="glosario-title">PUT WALL</div>
+          <div class="glosario-subtitle">Soporte dinámico inferior</div>
+        </div>
+      </div>
+      <div class="glosario-body">
+        El strike con mayor concentración de gamma de <span class="hl-put">PUTs</span>. Es un <strong>suelo de soporte</strong>: si el precio cae hacia ese nivel, los MM cubren comprando el subyacente, lo que frena la caída.<br><br>
+        Al igual que el Call Wall, es dinámico y estructural — no es una línea técnica dibujada en el gráfico, es una posición real de mercado con cobertura activa.
+      </div>
+    </div>
+
+    <div class="glosario-card">
+      <div class="glosario-term">
+        <span class="glosario-icon">◈</span>
+        <div>
+          <div class="glosario-title">ZERO GAMMA</div>
+          <div class="glosario-subtitle">El nivel que cambia el régimen del mercado</div>
+        </div>
+      </div>
+      <div class="glosario-body">
+        El nivel de precio donde el GEX neto cambia de signo: de <span class="hl-call">positivo</span> (gamma largo, mercado absorbente) a <span class="hl-put">negativo</span> (gamma corto, mercado amplificador).<br><br>
+        <span class="hl-call">Por encima</span>: el mercado tiende a moverse con calma y reversiones → dealers amortizan.<br>
+        <span class="hl-put">Por debajo</span>: los movimientos se pueden acelerar → dealers amplifican.<br><br>
+        Es uno de los niveles más vigilados por traders institucionales que operan con opciones. Muchos abren posición según esté el precio respecto a este nivel al inicio de la sesión.
+      </div>
+    </div>
+
+    <!-- BLOQUE DEX -->
+    <div class="glosario-divider">
+      <span class="glosario-divider-label">Δ · DELTA EXPOSURE</span>
+      <div class="glosario-divider-line"></div>
+    </div>
+
+    <div class="glosario-card">
+      <div class="glosario-term">
+        <span class="glosario-icon">Δ</span>
+        <div>
+          <div class="glosario-title">DEX — DELTA EXPOSURE</div>
+          <div class="glosario-subtitle">Posicionamiento estructural de los market makers</div>
+        </div>
+      </div>
+      <div class="glosario-body">
+        Mientras el GEX mide la presión de rebalanceo por <em>movimiento</em> del subyacente, el DEX mide la <strong>exposición delta agregada</strong>: cuánto subyacente tienen que comprar o vender los MM en total para estar cubiertos ahora mismo.<br><br>
+        Un DEX muy <span class="hl-call">positivo</span>: los MM son compradores netos de subyacente para cubrir → demanda latente de cobertura que sostiene el precio.<br>
+        Un DEX muy <span class="hl-put">negativo</span>: lo contrario.<br><br>
+        Es una <em>foto del posicionamiento estructural</em>, no del flujo inmediato.
+      </div>
+    </div>
+
+    <!-- BLOQUE VENCIMIENTOS -->
+    <div class="glosario-divider">
+      <span class="glosario-divider-label">◎ · VENCIMIENTOS</span>
+      <div class="glosario-divider-line"></div>
+    </div>
+
+    <div class="glosario-card">
+      <div class="glosario-term">
+        <span class="glosario-icon">◎</span>
+        <div>
+          <div class="glosario-title">¿POR QUÉ SEPARAR VENCIMIENTOS?</div>
+          <div class="glosario-subtitle">No toda la presión actúa al mismo tiempo</div>
+        </div>
+      </div>
+      <div class="glosario-body">
+        Las opciones de distintos vencimientos no pesan igual.<br><br>
+        Las de <strong>vencimiento próximo</strong> tienen gamma muy alta → mueven el mercado a corto plazo. Son las que más importan esta semana.<br>
+        Las de <strong>vencimientos lejanos</strong> tienen más vega y menos gamma → son posicionamiento estructural, no presión inmediata.<br><br>
+        Ver solo el agregado puede ocultar que el nivel más importante esta semana está dominado por el vencimiento del viernes, mientras que el agregado lo suaviza con posiciones a 3 meses.<br><br>
+        Separar por vencimiento te dice <em>cuándo expira esa presión</em> y si el mapa cambia después del vencimiento.
+      </div>
+    </div>
+
+    <!-- BLOQUE POSICIONES Y FLUJO -->
+    <div class="glosario-divider">
+      <span class="glosario-divider-label">◈ · POSICIONES Y FLUJO</span>
+      <div class="glosario-divider-line"></div>
+    </div>
+
+    <div class="glosario-card">
+      <div class="glosario-term">
+        <span class="glosario-icon">◈</span>
+        <div>
+          <div class="glosario-title">TOP POSICIONES DEL DÍA</div>
+          <div class="glosario-subtitle">Dónde está concentrado el dinero</div>
+        </div>
+      </div>
+      <div class="glosario-body">
+        Las posiciones con mayor open interest en strikes concretos son donde <strong>más dinero está apostado o cubierto</strong>. No te dicen la dirección de quien las tiene — pueden ser compras o ventas — pero sí te dicen qué niveles de precio "importan" al mercado: donde hay más incentivo a defender o atacar.<br><br>
+        Combinado con el GEX te dice si esas posiciones están generando <em>presión de cobertura activa</em> o son posiciones pasivas a vencimiento lejano.
+      </div>
+    </div>
+
+    <div class="glosario-card">
+      <div class="glosario-term">
+        <span class="glosario-icon">≋</span>
+        <div>
+          <div class="glosario-title">FLUJO DE OI Y VOLUMEN</div>
+          <div class="glosario-subtitle">Cómo leer el posicionamiento en el tiempo</div>
+        </div>
+      </div>
+      <div class="glosario-body">
+        El <strong>open interest (OI)</strong> es el número de contratos abiertos — cambia cuando se abren o cierran posiciones, no por trading intradía.<br>
+        El <strong>volumen</strong> es cuántos contratos se han negociado hoy.<br><br>
+        Leerlos juntos es clave:<br>
+        <span class="hl-call">Volumen alto + OI creciente</span> → se abren posiciones nuevas. Alguien toma riesgo.<br>
+        <span class="hl-put">Volumen alto + OI decreciente</span> → se cierran posiciones. Alguien sale.<br>
+        <span class="hl-spot">Volumen alto + OI estable</span> → las posiciones rotan entre manos.<br><br>
+        El flujo de OI a lo largo del tiempo muestra si el interés estructural en un strike está <em>creciendo o reduciéndose</em>.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── Error overlay ── -->
+<div class="err-overlay" id="err-overlay">
+  <div class="err-box">
+    <h2>⚠ No se pudo cargar el dashboard</h2>
+    <p>Los archivos JSON del DAX no están disponibles (ejecuta <strong>eurex_dax.py</strong>).<br>
+       Para usar en local, sirve la carpeta con:</p>
+    <code>python3 -m http.server 8080</code>
+    <p style="margin-top:12px">y abre <strong>http://localhost:8080/</strong></p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+const state = {
+  gex: {
+    data: null, chart: null, activo: null, vcto: null,
+    mode: 'callput', view: 'graph',
+    tableSort: { col: 'strike', dir: 'desc' },
+  },
+  dex:      { data: null, chart: null, activo: null, vcto: null, mode: 'callput' },
+  opciones: { data: null },
+  historico:{ data: null, chart: null, activo: null, vcto: null, metric: 'volumen' },
+  informes: { data: null },
+  tab: 'gex',
+};
+
+// ── Utilidades ────────────────────────────────────────────────────────────────
+
+function fmtGex(v) {
+  if (v == null || isNaN(v)) return '—';
+  const a = Math.abs(v);
+  if (a >= 1e9) return (v / 1e9).toFixed(2) + 'B';
+  if (a >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+  if (a >= 1e3) return (v / 1e3).toFixed(1) + 'K';
+  return v.toFixed(0);
+}
+
+function fmtNum(v) {
+  if (v == null || isNaN(v)) return '—';
+  if (v >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+  if (v >= 1e3) return (v / 1e3).toFixed(1) + 'K';
+  return v.toLocaleString('es-ES', { maximumFractionDigits: 0 });
+}
+
+function fmtPrice(v, dec = 2) {
+  if (v == null || isNaN(v)) return '—';
+  return v.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+function el(id) { return document.getElementById(id); }
+
+// KPIs del vencimiento elegido (call/put wall y zero gamma/delta propios);
+// con "Todos los vencimientos" se usan los del agregado.
+const RANGO_STRIKES = 0.12;   // strikes mostrados: ±12% alrededor del DAX
+function gexKpis() {
+  const d = state.gex.data, a = state.gex.activo, v = el('gex-sel-vcto').value;
+  if (!d) return {};
+  return (v !== 'todos' && ((d.kpis_por_vcto || {})[a] || {})[v]) || (d.kpis_por_accion || {})[a] || {};
+}
+function dexKpis() {
+  const d = state.dex.data, a = state.dex.activo, v = el('dex-sel-vcto').value;
+  if (!d) return {};
+  return (v !== 'todos' && ((d.kpis_dex_por_vcto || {})[a] || {})[v]) || (d.kpis_dex_por_accion || {})[a] || {};
+}
+
+
+// Colores ratio C/P
+function ratioClass(r) {
+  if (r === '—') return 'c-muted';
+  const v = parseFloat(r);
+  if (v > 1.4) return 'ratio-call';
+  if (v < 0.7) return 'ratio-put';
+  return 'ratio-neutral';
+}
+function ratioLabel(r) {
+  if (r === '—') return '';
+  const v = parseFloat(r);
+  if (v > 1.4) return ' CALL DOM.';
+  if (v < 0.7) return ' PUT DOM.';
+  return ' NEUTRAL';
+}
+
+// ── Tab switching con deep linking ────────────────────────────────────────────
+
+function switchTab(tab) {
+  state.tab = tab;
+  history.replaceState(null, '', '#' + tab);
+  document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('active'));
+  el('tab-' + tab).classList.add('active');
+  el('tbtn-' + tab).classList.add('active');
+  const chartMap = { gex: state.gex.chart, dex: state.dex.chart, historico: state.historico.chart };
+  const ch = chartMap[tab];
+  if (ch) setTimeout(() => ch.resize(), 10);
+}
+
+// ── Hamburger menu (mobile) ──────────────────────────────────────────────────
+
+function hamOpen() {
+  el('ham-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden'; // evitar scroll de fondo mientras el drawer está abierto
+}
+function hamClose() {
+  el('ham-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function hamSwitch(tab) {
+  // Actualizar estado activo en el drawer
+  document.querySelectorAll('.ham-nav-btn').forEach(b => b.classList.remove('active'));
+  const hbtn = el('hbtn-' + tab);
+  if (hbtn) hbtn.classList.add('active');
+  // Cambiar pestaña y cerrar drawer
+  switchTab(tab);
+  // En móvil, desplazar al inicio de la página
+  if (window.innerWidth <= 700) window.scrollTo({ top: 0, behavior: 'smooth' });
+  hamClose();
+}
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB GEX
+// ═════════════════════════════════════════════════════════════════════════════
+
+function initGex() {
+  const d = state.gex.data;
+  if (!d) return;
+
+  if (d.meta) {
+    const parts = [];
+    if (d.meta.fecha_boletin) parts.push('Sesión ' + d.meta.fecha_boletin);
+    if (d.meta.generado)      parts.push('Generado ' + d.meta.generado);
+    el('meta-fecha').textContent = parts.join(' · ');
+    if (d.meta.tasa_libre_riesgo != null) {
+      el('footer-tasa').textContent =
+        (d.meta.tasa_libre_riesgo * 100).toFixed(1).replace('.', ',') + '%';
+    }
+  }
+
+  const sel = el('gex-sel-activo');
+  sel.innerHTML = '';
+  (d.subyacentes || []).forEach(ac => {
+    const o = document.createElement('option');
+    o.value = ac; o.textContent = ac;
+    sel.appendChild(o);
+  });
+
+  const defaultActivo =
+    (d.subyacentes || []).find(s => s === 'MINI IBEX-35') ||
+    (d.subyacentes || []).find(s => s.includes('IBEX')) ||
+    (d.subyacentes || [])[0] || '';
+  sel.value = defaultActivo;
+  state.gex.activo = defaultActivo;
+
+  gexOnActivoChange();
+}
+
+function gexOnActivoChange() {
+  const activo = el('gex-sel-activo').value;
+  state.gex.activo = activo;
+  const d = state.gex.data;
+
+  const sel = el('gex-sel-vcto');
+  sel.innerHTML = '<option value="todos">Todos los vencimientos</option>';
+  ((d.vencimientos || {})[activo] || []).forEach(v => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  });
+  sel.value = 'todos';
+  state.gex.vcto = 'todos';
+  gexRefresh();
+}
+
+function gexSetMode(mode) {
+  state.gex.mode = mode;
+  el('btn-net').classList.toggle('active', mode === 'net');
+  el('btn-cp').classList.toggle('active',  mode === 'callput');
+  gexRefresh();
+}
+
+function gexSetView(view) {
+  state.gex.view = view;
+  el('btn-graph').classList.toggle('active', view === 'graph');
+  el('btn-table').classList.toggle('active', view === 'table');
+  el('gex-graph-area').style.display = view === 'graph' ? '' : 'none';
+  el('gex-table-area').style.display = view === 'table' ? '' : 'none';
+  gexRefresh();
+  if (view === 'graph' && state.gex.chart) setTimeout(() => state.gex.chart.resize(), 30);
+}
+
+function gexGetData(todos = false) {
+  const d = state.gex.data, activo = state.gex.activo;
+  const vcto = el('gex-sel-vcto').value;
+  state.gex.vcto = vcto;
+  let rows = vcto === 'todos'
+    ? (d.gex_por_strike || []).filter(r => r.accion === activo)
+    : (d.gex_por_strike_vcto || []).filter(r => r.accion === activo && r.fecha_vencimiento === vcto);
+  const spot = gexKpis().spot;
+  if (spot && !todos) rows = rows.filter(r => Math.abs(r.strike / spot - 1) <= RANGO_STRIKES);
+  return rows.sort((a, b) => a.strike - b.strike);
+}
+
+function gexRefresh() {
+  if (!state.gex.data || !state.gex.activo) return;
+  const rows = gexGetData();
+  const kpis = gexKpis();
+  gexUpdateKPIs(gexGetData(true), kpis);
+  if (state.gex.view === 'graph') gexRenderGraph(rows, kpis);
+  else                             gexRenderTable(rows, kpis);
+}
+
+function gexUpdateKPIs(rows, kpis) {
+  const activo = state.gex.activo;
+  const vcto   = el('gex-sel-vcto').value;
+  const spot   = kpis.spot;
+
+  const totCall  = rows.reduce((s, r) => s + (r.call_gex || 0), 0);
+  const totPut   = rows.reduce((s, r) => s + (r.put_gex  || 0), 0);
+  const totNet   = rows.reduce((s, r) => s + (r.net_gex  || 0), 0);
+  const totGross = Math.abs(totCall) + Math.abs(totPut);
+  const absPut   = Math.abs(totPut);
+  const ratio    = absPut > 0 ? (Math.abs(totCall) / absPut).toFixed(2) : '—';
+
+  let callOi = null, putOi = null;
+  if (state.opciones.data) {
+    let opc = state.opciones.data.datos.filter(r => r.accion === activo);
+    if (vcto !== 'todos') opc = opc.filter(r => r.fecha_vencimiento === vcto);
+    callOi = opc.filter(r => r.tipo === 'CALL').reduce((s, r) => s + (r.posicion_abierta || 0), 0);
+    putOi  = opc.filter(r => r.tipo === 'PUT' ).reduce((s, r) => s + (r.posicion_abierta || 0), 0);
+  }
+
+  const dec = (spot != null && spot >= 1000) ? 0 : 2;
+  el('gex-kpi-spot').textContent     = spot != null ? fmtPrice(spot, dec) : '—';
+  el('gex-kpi-spot-sub').textContent = activo;
+
+  const netEl = el('gex-kpi-net');
+  netEl.textContent = fmtGex(totNet);
+  netEl.style.color = totNet >= 0 ? 'var(--call)' : 'var(--put)';
+
+  const ratioEl = el('gex-kpi-ratio');
+  ratioEl.textContent = 'Ratio: ' + ratio + ratioLabel(ratio);
+  ratioEl.className   = 'sub ' + ratioClass(ratio);
+
+  el('gex-kpi-call').textContent    = fmtGex(totCall);
+  el('gex-kpi-call-oi').textContent = callOi != null ? fmtNum(callOi) + ' OI' : '—';
+  el('gex-kpi-put').textContent     = fmtGex(totPut);
+  el('gex-kpi-put-oi').textContent  = putOi  != null ? fmtNum(putOi)  + ' OI' : '—';
+  el('gex-kpi-total').textContent   = fmtGex(totGross);
+  const totOi = (callOi != null && putOi != null) ? callOi + putOi : null;
+  el('gex-kpi-total-oi').textContent = totOi != null ? fmtNum(totOi) + ' OI' : '—';
+
+  const cw = kpis.call_wall;
+  el('gex-kpi-cw').textContent = cw != null ? fmtPrice(cw, cw >= 1000 ? 0 : 2) : '—';
+  el('gex-kpi-cw-pct').textContent = (cw != null && spot != null)
+    ? ((cw - spot) / spot >= 0 ? '+' : '') + ((cw - spot) / spot * 100).toFixed(2) + '%' : '—';
+
+  const pw = kpis.put_wall;
+  el('gex-kpi-pw').textContent = pw != null ? fmtPrice(pw, pw >= 1000 ? 0 : 2) : '—';
+  el('gex-kpi-pw-pct').textContent = (pw != null && spot != null)
+    ? ((pw - spot) / spot >= 0 ? '+' : '') + ((pw - spot) / spot * 100).toFixed(2) + '%' : '—';
+
+  const zg = kpis.zero_gamma;
+  el('gex-kpi-zg').textContent     = zg != null ? fmtPrice(zg, zg >= 1000 ? 0 : 2) : 'n/a';
+  el('gex-kpi-regime').textContent = kpis.regime || '—';
+  el('gex-kpi-regime').style.color = kpis.regime === 'POSITIVO' ? 'var(--call)' : 'var(--put)';
+}
+
+// ── Plugin líneas GEX ─────────────────────────────────────────────────────────
+// BUGFIX: getPixelForValue en escala categórica requiere el ÍNDICE, no el valor.
+// Antes se pasaba labels[i] (ej: 12000) como si fuera un índice → NaN para MINI IBEX-35.
+// Ahora se pasa el índice i directamente.
+
+const gexLinesPlugin = {
+  id: 'gexLines',
+  afterDraw(chart) {
+    const activo = state.gex.activo;
+    const d = state.gex.data;
+    if (!d || !activo) return;
+    const kpis = gexKpis();
+    if (!kpis) return;
+
+    const ctx    = chart.ctx;
+    const xScale = chart.scales.x;
+    const yScale = chart.scales.y;
+    const labels = chart.data.labels.map(Number);
+    const yTop   = yScale.top;
+    const yBot   = yScale.bottom;
+
+    function xForPrice(price) {
+      if (price == null || isNaN(price) || !labels.length) return null;
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data || !meta.data.length) return null;
+      for (let i = 0; i < labels.length; i++) {
+        if (labels[i] >= price) {
+          if (i === 0) return meta.data[0].x;
+          const t  = (price - labels[i-1]) / (labels[i] - labels[i-1]);
+          const p0 = meta.data[i-1].x;
+          const p1 = meta.data[i].x;
+          return p0 + t * (p1 - p0);
+        }
+      }
+      return meta.data[meta.data.length - 1].x;
+    }
+
+    function drawLine(price, color, label) {
+      const x = xForPrice(price);
+      if (x == null) return;
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.moveTo(x, yTop);
+      ctx.lineTo(x, yBot);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle   = color;
+      ctx.font        = '500 10px JetBrains Mono, monospace';
+      ctx.textAlign   = 'center';
+      ctx.fillText(label, x, yTop - 4);
+      ctx.restore();
+    }
+
+    drawLine(kpis.spot,       '#f59e0b', 'SPOT');
+    drawLine(kpis.call_wall,  '#22c55e', 'C·WALL');
+    drawLine(kpis.put_wall,   '#ef4444', 'P·WALL');
+    drawLine(kpis.zero_gamma, '#a78bfa', 'ZERO·γ');
+  }
+};
+
+function gexRenderGraph(rows, kpis) {
+  const mode   = state.gex.mode;
+  const labels = rows.map(r => r.strike);
+  let datasets;
+  if (mode === 'net') {
+    datasets = [{
+      label: 'NET GEX',
+      data:  rows.map(r => r.net_gex || 0),
+      backgroundColor: rows.map(r => (r.net_gex || 0) >= 0 ? 'rgba(34,197,94,.65)' : 'rgba(239,68,68,.65)'),
+      borderColor:     rows.map(r => (r.net_gex || 0) >= 0 ? 'rgba(34,197,94,.9)'  : 'rgba(239,68,68,.9)'),
+      borderWidth: 1, borderRadius: 1,
+    }];
+  } else {
+    datasets = [
+      { label: 'CALL GEX', data: rows.map(r => r.call_gex || 0),
+        backgroundColor: 'rgba(34,197,94,.65)', borderColor: 'rgba(34,197,94,.9)', borderWidth: 1, borderRadius: 1 },
+      { label: 'PUT GEX',  data: rows.map(r => r.put_gex  || 0),
+        backgroundColor: 'rgba(239,68,68,.65)', borderColor: 'rgba(239,68,68,.9)', borderWidth: 1, borderRadius: 1 },
+    ];
+  }
+  if (state.gex.chart) { state.gex.chart.destroy(); state.gex.chart = null; }
+  state.gex.chart = new Chart(el('chart-gex'), {
+    type: 'bar', data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 200 },
+      plugins: {
+        legend: { display: mode === 'callput',
+          labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 }, boxWidth: 12 } },
+        tooltip: {
+          backgroundColor: '#13131e', borderColor: '#2a2a40', borderWidth: 1,
+          titleColor: '#e2e8f0', bodyColor: '#94a3b8',
+          titleFont: { family: 'JetBrains Mono', size: 11 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
+          callbacks: {
+            title: items => 'Strike ' + Number(items[0].label).toLocaleString('es-ES'),
+            label: item  => ' ' + item.dataset.label + ': ' + fmtGex(item.raw),
+          },
+        },
+      },
+      scales: {
+        x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 20,
+              callback: v => { const l = labels[v]; return l >= 1000 ? l.toLocaleString('es-ES') : l; } },
+             grid: { color: '#1e1e2e' } },
+        y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtGex(v) },
+             grid: { color: '#1e1e2e' } },
+      },
+    },
+    plugins: [gexLinesPlugin],
+  });
+}
+
+function gexTableSort(col) {
+  const sort = state.gex.tableSort;
+  sort.dir = (sort.col === col && sort.dir === 'desc') ? 'asc' : 'desc';
+  sort.col = col;
+  const rows = gexGetData();
+  const kpis = gexKpis();
+  gexRenderTable(rows, kpis);
+}
+
+function gexRenderTable(rows, kpis) {
+  const activo = state.gex.activo, vcto = el('gex-sel-vcto').value;
+  const spot = kpis.spot, callWall = kpis.call_wall, putWall = kpis.put_wall, EPS = 0.001;
+  let atmStrike = null;
+  if (spot != null && rows.length > 0)
+    atmStrike = rows.reduce((b, r) => Math.abs(r.strike - spot) < Math.abs(b - spot) ? r.strike : b, rows[0].strike);
+
+  const opcMap = {};
+  if (state.opciones.data) {
+    let opc = state.opciones.data.datos.filter(r => r.accion === activo);
+    if (vcto !== 'todos') opc = opc.filter(r => r.fecha_vencimiento === vcto);
+    opc.forEach(r => {
+      const k = r.strike; if (k == null) return;
+      if (!opcMap[k]) opcMap[k] = { call_oi: 0, put_oi: 0, call_iv: null, put_iv: null };
+      if (r.tipo === 'CALL') { opcMap[k].call_oi += (r.posicion_abierta || 0);
+        if (r.volatilidad_cierre != null && opcMap[k].call_iv == null) opcMap[k].call_iv = r.volatilidad_cierre; }
+      if (r.tipo === 'PUT')  { opcMap[k].put_oi  += (r.posicion_abierta || 0);
+        if (r.volatilidad_cierre != null && opcMap[k].put_iv  == null) opcMap[k].put_iv  = r.volatilidad_cierre; }
+    });
+  }
+
+  let td = rows.map(r => {
+    const opc = opcMap[r.strike] || {}, cOi = opc.call_oi || 0, pOi = opc.put_oi || 0;
+    return { strike: r.strike, net_gex: r.net_gex||0, call_gex: r.call_gex||0, put_gex: r.put_gex||0,
+      call_oi: cOi, put_oi: pOi, total_oi: cOi + pOi, call_iv: opc.call_iv, put_iv: opc.put_iv,
+      is_spot: r.strike === atmStrike,
+      is_cw: callWall != null && Math.abs(r.strike - callWall) < EPS,
+      is_pw: putWall  != null && Math.abs(r.strike - putWall)  < EPS,
+      pct_spot: spot != null ? ((r.strike - spot) / spot * 100) : null };
+  });
+  const { col, dir } = state.gex.tableSort;
+  td.sort((a, b) => { const av = a[col] ?? -Infinity, bv = b[col] ?? -Infinity; return dir === 'desc' ? bv - av : av - bv; });
+
+  const maxCIv = Math.max(1, ...td.map(r => r.call_iv || 0));
+  const maxPIv = Math.max(1, ...td.map(r => r.put_iv  || 0));
+  const dec = (spot != null && spot >= 1000) ? 0 : 2;
+
+  function ivCell(iv, maxIv, color) {
+    if (iv == null) return '<td class="c-muted" style="font-size:9px;text-align:right">—</td>';
+    const pct = Math.min((iv / maxIv) * 100, 100).toFixed(1);
+    return `<td><div class="iv-cell"><div class="iv-bar-wrap"><div class="iv-bar" style="width:${pct}%;background:${color}"></div></div><span class="iv-num">${iv.toFixed(1)}%</span></div></td>`;
+  }
+
+  el('gex-table-body').innerHTML = td.map(r => {
+    const rc = r.is_spot ? 'row-spot' : r.is_cw ? 'row-cw' : r.is_pw ? 'row-pw' : '';
+    const badges = (r.is_spot ? '<span class="badge badge-spot">SPOT</span>' : '') +
+                   (r.is_cw   ? '<span class="badge badge-cw">CALL WALL</span>' : '') +
+                   (r.is_pw   ? '<span class="badge badge-pw">PUT WALL</span>' : '');
+    const pctStr = r.pct_spot != null ? (r.pct_spot >= 0 ? '+' : '') + r.pct_spot.toFixed(2) + '%' : '';
+    return `<tr class="${rc}">
+      <td><div class="strike-cell"><div class="strike-main">${fmtPrice(r.strike, dec)}${badges}</div><div class="strike-pct">${pctStr}</div></div></td>
+      ${ivCell(r.call_iv, maxCIv, 'var(--call)')}${ivCell(r.put_iv, maxPIv, 'var(--put)')}
+      <td style="color:${r.net_gex >= 0 ? 'var(--call)' : 'var(--put)'}">${fmtGex(r.net_gex)}</td>
+      <td class="c-call">${fmtGex(r.call_gex)}</td><td class="c-put">${fmtGex(r.put_gex)}</td>
+      <td>${fmtNum(r.call_oi)}</td><td>${fmtNum(r.put_oi)}</td><td>${fmtNum(r.total_oi)}</td></tr>`;
+  }).join('');
+
+  ['strike','call_iv','put_iv','net_gex','call_gex','put_gex','call_oi','put_oi','total_oi'].forEach(c => {
+    const sp = el('sort-' + c); if (sp) sp.textContent = c === col ? (dir === 'desc' ? '↓' : '↑') : '↕';
+  });
+}
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB DEX
+// ═════════════════════════════════════════════════════════════════════════════
+
+function initDex() {
+  const d = state.dex.data; if (!d) return;
+  const sel = el('dex-sel-activo');
+  sel.innerHTML = '';
+  (d.subyacentes || []).forEach(ac => {
+    const o = document.createElement('option'); o.value = ac; o.textContent = ac; sel.appendChild(o);
+  });
+  const defaultActivo =
+    (d.subyacentes || []).find(s => s === 'MINI IBEX-35') ||
+    (d.subyacentes || []).find(s => s.includes('IBEX')) ||
+    (d.subyacentes || [])[0] || '';
+  sel.value = defaultActivo;
+  state.dex.activo = defaultActivo;
+  dexOnActivoChange();
+}
+
+function dexOnActivoChange() {
+  const activo = el('dex-sel-activo').value;
+  state.dex.activo = activo;
+  const d = state.dex.data;
+  const sel = el('dex-sel-vcto');
+  sel.innerHTML = '<option value="todos">Todos los vencimientos</option>';
+  ((d.vencimientos || {})[activo] || []).forEach(v => {
+    const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o);
+  });
+  sel.value = 'todos'; state.dex.vcto = 'todos';
+  dexRefresh();
+}
+
+function dexSetMode(mode) {
+  state.dex.mode = mode;
+  el('dex-btn-net').classList.toggle('active', mode === 'net');
+  el('dex-btn-cp').classList.toggle('active',  mode === 'callput');
+  dexRefresh();
+}
+
+function dexGetData(todos = false) {
+  const d = state.dex.data, activo = state.dex.activo, vcto = el('dex-sel-vcto').value;
+  state.dex.vcto = vcto;
+  let rows = vcto === 'todos'
+    ? (d.dex_por_strike || []).filter(r => r.accion === activo)
+    : (d.dex_por_strike_vcto || []).filter(r => r.accion === activo && r.fecha_vencimiento === vcto);
+  const spot = dexKpis().spot;
+  if (spot && !todos) rows = rows.filter(r => Math.abs(r.strike / spot - 1) <= RANGO_STRIKES);
+  return rows.sort((a, b) => a.strike - b.strike);
+}
+
+function dexRefresh() {
+  if (!state.dex.data || !state.dex.activo) return;
+  const rows = dexGetData();
+  const kpis = dexKpis();
+  dexUpdateKPIs(dexGetData(true), kpis);
+  dexRenderGraph(rows, kpis);
+}
+
+function dexUpdateKPIs(rows, kpis) {
+  const activo = state.dex.activo, vcto = el('dex-sel-vcto').value, spot = kpis.spot;
+  const totCall = rows.reduce((s, r) => s + (r.call_dex || 0), 0);
+  const totPut  = rows.reduce((s, r) => s + (r.put_dex  || 0), 0);
+  const totNet  = rows.reduce((s, r) => s + (r.net_dex  || 0), 0);
+  const totGross = Math.abs(totCall) + Math.abs(totPut);
+  const ratio = Math.abs(totPut) > 0 ? (Math.abs(totCall) / Math.abs(totPut)).toFixed(2) : '—';
+
+  let callOi = null, putOi = null;
+  if (state.opciones.data) {
+    let opc = state.opciones.data.datos.filter(r => r.accion === activo);
+    if (vcto !== 'todos') opc = opc.filter(r => r.fecha_vencimiento === vcto);
+    callOi = opc.filter(r => r.tipo === 'CALL').reduce((s, r) => s + (r.posicion_abierta || 0), 0);
+    putOi  = opc.filter(r => r.tipo === 'PUT' ).reduce((s, r) => s + (r.posicion_abierta || 0), 0);
+  }
+
+  const dec = (spot != null && spot >= 1000) ? 0 : 2;
+  el('dex-kpi-spot').textContent     = spot != null ? fmtPrice(spot, dec) : '—';
+  el('dex-kpi-spot-sub').textContent = activo;
+
+  const netEl = el('dex-kpi-net');
+  netEl.textContent = fmtGex(totNet);
+  netEl.style.color = totNet >= 0 ? 'var(--call)' : 'var(--put)';
+
+  const ratioEl = el('dex-kpi-ratio');
+  ratioEl.textContent = 'Ratio: ' + ratio + ratioLabel(ratio);
+  ratioEl.className   = 'sub ' + ratioClass(ratio);
+
+  el('dex-kpi-call').textContent    = fmtGex(totCall);
+  el('dex-kpi-call-oi').textContent = callOi != null ? fmtNum(callOi) + ' OI' : '—';
+  el('dex-kpi-put').textContent     = fmtGex(totPut);
+  el('dex-kpi-put-oi').textContent  = putOi  != null ? fmtNum(putOi)  + ' OI' : '—';
+  el('dex-kpi-total').textContent   = fmtGex(totGross);
+  const totOi = (callOi != null && putOi != null) ? callOi + putOi : null;
+  el('dex-kpi-total-oi').textContent = totOi != null ? fmtNum(totOi) + ' OI' : '—';
+
+  const cw = kpis.call_wall;
+  el('dex-kpi-cw').textContent = cw != null ? fmtPrice(cw, cw >= 1000 ? 0 : 2) : '—';
+  el('dex-kpi-cw-pct').textContent = (cw != null && spot != null)
+    ? ((cw-spot)/spot >= 0 ? '+' : '') + ((cw-spot)/spot*100).toFixed(2) + '%' : '—';
+
+  const pw = kpis.put_wall;
+  el('dex-kpi-pw').textContent = pw != null ? fmtPrice(pw, pw >= 1000 ? 0 : 2) : '—';
+  el('dex-kpi-pw-pct').textContent = (pw != null && spot != null)
+    ? ((pw-spot)/spot >= 0 ? '+' : '') + ((pw-spot)/spot*100).toFixed(2) + '%' : '—';
+
+  const zd = kpis.zero_delta;
+  el('dex-kpi-zd').textContent     = zd != null ? fmtPrice(zd, zd >= 1000 ? 0 : 2) : 'n/a';
+  el('dex-kpi-regime').textContent = kpis.regime || '—';
+  el('dex-kpi-regime').style.color = kpis.regime === 'LONG' ? 'var(--call)' : 'var(--put)';
+}
+
+// ── Plugin líneas DEX ─────────────────────────────────────────────────────────
+// BUGFIX: mismo fix que gexLinesPlugin — pasar índice i, no labels[i]
+
+const dexLinesPlugin = {
+  id: 'dexLines',
+  afterDraw(chart) {
+    const activo = state.dex.activo, d = state.dex.data;
+    if (!d || !activo) return;
+    const kpis = dexKpis();
+    if (!kpis) return;
+
+    const ctx = chart.ctx, xScale = chart.scales.x, yScale = chart.scales.y;
+    const labels = chart.data.labels.map(Number);
+    const yTop = yScale.top, yBot = yScale.bottom;
+
+    function xForPrice(price) {
+      if (price == null || isNaN(price) || !labels.length) return null;
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data || !meta.data.length) return null;
+      for (let i = 0; i < labels.length; i++) {
+        if (labels[i] >= price) {
+          if (i === 0) return meta.data[0].x;
+          const t  = (price - labels[i-1]) / (labels[i] - labels[i-1]);
+          const p0 = meta.data[i-1].x;
+          const p1 = meta.data[i].x;
+          return p0 + t * (p1 - p0);
+        }
+      }
+      return meta.data[meta.data.length - 1].x;
+    }
+
+    function drawLine(price, color, label) {
+      const x = xForPrice(price); if (x == null) return;
+      ctx.save();
+      ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]); ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.moveTo(x, yTop); ctx.lineTo(x, yBot); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1; ctx.fillStyle = color;
+      ctx.font = '500 10px JetBrains Mono, monospace'; ctx.textAlign = 'center';
+      ctx.fillText(label, x, yTop - 4); ctx.restore();
+    }
+
+    drawLine(kpis.spot,       '#f59e0b', 'SPOT');
+    drawLine(kpis.call_wall,  '#22c55e', 'C·WALL');
+    drawLine(kpis.put_wall,   '#ef4444', 'P·WALL');
+    drawLine(kpis.zero_delta, '#06b6d4', 'ZERO·Δ');
+  }
+};
+
+function dexRenderGraph(rows, kpis) {
+  const mode = state.dex.mode, labels = rows.map(r => r.strike);
+  let datasets;
+  if (mode === 'net') {
+    datasets = [{ label: 'NET DEX', data: rows.map(r => r.net_dex || 0),
+      backgroundColor: rows.map(r => (r.net_dex||0) >= 0 ? 'rgba(34,197,94,.65)' : 'rgba(239,68,68,.65)'),
+      borderColor:     rows.map(r => (r.net_dex||0) >= 0 ? 'rgba(34,197,94,.9)'  : 'rgba(239,68,68,.9)'),
+      borderWidth: 1, borderRadius: 1 }];
+  } else {
+    datasets = [
+      { label: 'CALL DEX', data: rows.map(r => r.call_dex || 0),
+        backgroundColor: 'rgba(34,197,94,.65)', borderColor: 'rgba(34,197,94,.9)', borderWidth: 1, borderRadius: 1 },
+      { label: 'PUT DEX',  data: rows.map(r => r.put_dex  || 0),
+        backgroundColor: 'rgba(239,68,68,.65)', borderColor: 'rgba(239,68,68,.9)', borderWidth: 1, borderRadius: 1 },
+    ];
+  }
+  if (state.dex.chart) { state.dex.chart.destroy(); state.dex.chart = null; }
+  state.dex.chart = new Chart(el('chart-dex'), {
+    type: 'bar', data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 200 },
+      plugins: {
+        legend: { display: mode === 'callput',
+          labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 }, boxWidth: 12 } },
+        tooltip: {
+          backgroundColor: '#13131e', borderColor: '#2a2a40', borderWidth: 1,
+          titleColor: '#e2e8f0', bodyColor: '#94a3b8',
+          titleFont: { family: 'JetBrains Mono', size: 11 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
+          callbacks: {
+            title: items => 'Strike ' + Number(items[0].label).toLocaleString('es-ES'),
+            label: item  => ' ' + item.dataset.label + ': ' + fmtGex(item.raw),
+          },
+        },
+      },
+      scales: {
+        x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 20,
+              callback: v => { const l = labels[v]; return l >= 1000 ? l.toLocaleString('es-ES') : l; } },
+             grid: { color: '#1e1e2e' } },
+        y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtGex(v) },
+             grid: { color: '#1e1e2e' } },
+      },
+    },
+    plugins: [dexLinesPlugin],
+  });
+}
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB INFORMES
+// ═════════════════════════════════════════════════════════════════════════════
+
+function initInformes() {
+  const d = state.informes.data; if (!d) return;
+  const fecha = (d.meta && d.meta.fecha_boletin) ? d.meta.fecha_boletin : '';
+  if (fecha) {
+    el('inf-title-top10').textContent = 'TOP 10 · VOLUMEN CONTRATOS  ·  Boletín: ' + fecha;
+    el('inf-title-mini').textContent  = 'TOP 5 · MINI IBEX-35 (CALL+PUT)  ·  Boletín: ' + fecha;
+  }
+  el('inf-text-top10').textContent = d.top10_text     || '(sin datos)';
+  el('inf-text-mini').textContent  = d.mini_ibex_text || '(sin datos)';
+}
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TAB HISTÓRICO
+// ═════════════════════════════════════════════════════════════════════════════
+
+function initHistorico() {
+  const d = state.historico.data; if (!d) return;
+  const sel = el('his-sel-activo');
+  sel.innerHTML = '';
+  (d.acciones || []).forEach(ac => {
+    const o = document.createElement('option'); o.value = ac; o.textContent = ac; sel.appendChild(o);
+  });
+  const defaultActivo =
+    (d.acciones || []).find(s => s === 'MINI IBEX-35') ||
+    (d.acciones || []).find(s => s.includes('IBEX')) ||
+    (d.acciones || [])[0] || '';
+  sel.value = defaultActivo;
+  state.historico.activo = defaultActivo;
+  hisOnActivoChange();
+  el('his-kpi-dias').textContent = d.num_dias             || '—';
+  el('his-kpi-upd').textContent  = d.ultima_actualizacion || '';
+}
+
+function hisOnActivoChange() {
+  const activo = el('his-sel-activo').value;
+  state.historico.activo = activo;
+  const d = state.historico.data;
+  const sel = el('his-sel-vcto');
+  sel.innerHTML = '<option value="todos">Todos los vencimientos</option>';
+  ((d.vencimientos || {})[activo] || []).forEach(v => {
+    const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o);
+  });
+  sel.value = 'todos'; state.historico.vcto = 'todos';
+  hisRender();
+}
+
+function hisSetMetric(metric) {
+  state.historico.metric = metric;
+  el('his-btn-vol').classList.toggle('active', metric === 'volumen');
+  el('his-btn-oi').classList.toggle('active',  metric === 'oi');
+  hisRender();
+}
+
+function hisRender() {
+  const d = state.historico.data, activo = state.historico.activo;
+  const vcto = el('his-sel-vcto').value, metric = state.historico.metric;
+  state.historico.vcto = vcto;
+  const field = metric === 'volumen' ? 'volumen_contratos' : 'posicion_abierta';
+  const lbl   = metric === 'volumen' ? 'VOL.' : 'OI';
+  el('his-kpi-call-lbl').textContent = lbl + ' CALL (período)';
+  el('his-kpi-put-lbl').textContent  = lbl + ' PUT (período)';
+
+  let rows = (d.datos || []).filter(r => r.accion === activo);
+  if (vcto !== 'todos') rows = rows.filter(r => r.fecha_vencimiento === vcto);
+  const fechas = [...new Set(rows.map(r => r.fecha_boletin))].sort();
+  const callMap = {}, putMap = {};
+  fechas.forEach(f => { callMap[f] = 0; putMap[f] = 0; });
+  rows.forEach(r => {
+    if (r.tipo === 'CALL') callMap[r.fecha_boletin] += (r[field] || 0);
+    if (r.tipo === 'PUT')  putMap[r.fecha_boletin]  += (r[field] || 0);
+  });
+  const callData = fechas.map(f => callMap[f]);
+  const putData  = fechas.map(f => putMap[f]);
+  const totCall  = callData.reduce((s, v) => s + v, 0);
+  const totPut   = putData.reduce((s, v)  => s + v, 0);
+  const totAll   = totCall + totPut;
+  const ratio    = totPut > 0 ? (totCall / totPut).toFixed(2) : '—';
+
+  el('his-kpi-call').textContent     = fmtNum(totCall);
+  el('his-kpi-put').textContent      = fmtNum(totPut);
+  el('his-kpi-call-pct').textContent = totAll > 0 ? ((totCall / totAll) * 100).toFixed(1) + '% del total' : '—';
+  el('his-kpi-put-pct').textContent  = totAll > 0 ? ((totPut  / totAll) * 100).toFixed(1) + '% del total' : '—';
+
+  const hisRatioEl = el('his-kpi-ratio');
+  hisRatioEl.textContent = ratio;
+  hisRatioEl.className   = 'val ' + ratioClass(ratio);
+
+  const labFechas = fechas.map(f => { const p = f.split('/'); return p.length >= 2 ? p[0] + '/' + p[1] : f; });
+
+  const cfg = {
+    type: 'line',
+    data: { labels: labFechas, datasets: [
+      { label: 'CALL', data: callData, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,.12)',
+        borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#22c55e', tension: 0.3, fill: true },
+      { label: 'PUT',  data: putData,  borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.12)',
+        borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#ef4444', tension: 0.3, fill: true },
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 200 },
+      plugins: {
+        legend: { display: true, position: 'top',
+          labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 }, boxWidth: 12 } },
+        tooltip: {
+          backgroundColor: '#13131e', borderColor: '#2a2a40', borderWidth: 1,
+          titleColor: '#e2e8f0', bodyColor: '#94a3b8',
+          titleFont: { family: 'JetBrains Mono', size: 11 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
+          callbacks: {
+            title: items => 'Boletín ' + fechas[items[0].dataIndex],
+            label: item  => ' ' + item.dataset.label + ': ' + fmtNum(item.raw),
+          },
+        },
+      },
+      scales: {
+        x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 15 }, grid: { color: '#1e1e2e' } },
+        y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtNum(v) }, grid: { color: '#1e1e2e' } },
+      },
+    },
+  };
+
+  if (state.historico.chart) {
+    state.historico.chart.data = cfg.data; state.historico.chart.options = cfg.options;
+    state.historico.chart.update('none');
+  } else {
+    state.historico.chart = new Chart(el('chart-historico'), cfg);
+  }
+}
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INIT
+// ═════════════════════════════════════════════════════════════════════════════
+
+async function loadAll() {
+  const urls = [
+    'data/dax_gex_latest.json',
+    'data/dax_opciones_latest.json',
+  ];
+  const results = await Promise.allSettled(
+    urls.map(u => fetch(u).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }))
+  );
+  const [resGex, resOpc] = results;
+
+  if (resGex.status === 'fulfilled') { state.gex.data = resGex.value; state.dex.data = resGex.value; }
+  else console.warn('dax_gex_latest.json no disponible:', resGex.reason);
+  if (resOpc.status === 'fulfilled') { state.opciones.data = resOpc.value; }
+  else console.warn('dax_opciones_latest.json no disponible:', resOpc.reason);
+
+  if (state.gex.data) initGex();
+  if (state.dex.data) initDex();
+  if (!state.gex.data) el('err-overlay').classList.add('show');
+
+  // Deep linking: activar tab desde hash de la URL
+  const hashTab = window.location.hash.slice(1);
+  if (['gex','dex','glosario'].includes(hashTab)) {
+    switchTab(hashTab);
+    document.querySelectorAll('.ham-nav-btn').forEach(b => b.classList.remove('active'));
+    const hbtn = el('hbtn-' + hashTab);
+    if (hbtn) hbtn.classList.add('active');
+  }
+}
+
+loadAll();
+</script>
+
+<!-- ── SEO: texto indexable por Google (colapsado por defecto) ── -->
+<details style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;" aria-hidden="true">
+  <summary>Qué es este dashboard · GEX y DEX sobre opciones del DAX (Eurex)</summary>
+  <h2>Qué es este dashboard · GEX y DEX sobre opciones del DAX (Eurex)</h2>
+  <h3>Gamma Exposure (GEX) — qué mide y para qué sirve</h3>
+  <p>El Gamma Exposure agrega la presión de cobertura que ejercen los market makers sobre el precio del subyacente. Cuando un dealer vende opciones, queda expuesto a gamma: cada movimiento del mercado le obliga a rebalancear su cobertura comprando o vendiendo el índice. El GEX muestra dónde se concentra esa presión en cada strike. Un GEX neto positivo indica que los dealers actúan como amortiguadores — venden en subidas, compran en bajadas — lo que tiende a comprimir la volatilidad. Un GEX neto negativo invierte el efecto y puede amplificar los movimientos. El nivel donde el GEX cambia de signo se llama Zero Gamma y es uno de los niveles de referencia más vigilados por traders institucionales de opciones.</p>
+  <h3>Delta Exposure (DEX) — posicionamiento estructural de los dealers</h3>
+  <p>El Delta Exposure mide la exposición delta neta agregada de los market makers: cuánto subyacente necesitan comprar o vender para mantener su cartera delta-neutral. Un DEX muy positivo implica que los dealers son compradores netos de cobertura, lo que genera demanda latente que sostiene el precio. Un DEX muy negativo indica lo contrario. A diferencia del GEX — que mide el flujo de rebalanceo ante movimientos — el DEX es una foto del posicionamiento estructural actual.</p>
+  <h3>Fuente de datos: estadísticas diarias de Eurex (ODAX)</h3>
+  <p>Los datos provienen de las estadísticas diarias públicas de Eurex para las opciones sobre el DAX (ODAX): posición abierta, volumen y precio de liquidación por strike, en vencimientos semanales y mensuales. Eurex no publica la volatilidad implícita ni el nivel del índice, así que el forward de cada vencimiento se obtiene por paridad put-call y la volatilidad implícita invirtiendo Black-76 sobre la opción fuera de dinero de cada strike. Multiplicador: 5 € por punto. GEX = Gamma × Open Interest × Multiplicador × Spot².</p>
+  <h3>Cómo leer el dashboard</h3>
+  <p>La pestaña GEX muestra el perfil de gamma por strike del DAX: el Call Wall es el nivel con mayor concentración de gamma de calls y el Put Wall el de puts. Al elegir un vencimiento, los niveles (call wall, put wall, zero gamma) se recalculan solo con ese vencimiento. La pestaña DEX replica el análisis para delta. El Glosario explica cada concepto.</p>
+</details>
+
+<!-- ── Footer ── -->
+<div class="footer">
+  <div class="footer-line">
+    Tasa libre de riesgo BCE: <span id="footer-tasa">2,5%</span>
+    &nbsp;·&nbsp; Vencimientos semanales y mensuales · 5 €/punto
+    &nbsp;·&nbsp; Fuente: Eurex (ODAX) · IV y spot implícitos calculados
+    &nbsp;·&nbsp; GEX = Gamma × OI × Multiplicador × Spot²
+  </div>
+  <div class="footer-line">
+    * Todos los vencimientos
+    &nbsp;·&nbsp; <a href="mailto:joseantonio@noquedaotraopcion.com">joseantonio@noquedaotraopcion.com</a>
+  </div>
+  <div class="footer-line footer-cta">
+    🌐 <a href="https://noquedaotraopcion.com" target="_blank" rel="noopener">noquedaotraopcion.com</a>
+    &nbsp;·&nbsp;
+    ▶ <a href="https://youtube.com/@noquedaotraopcion" target="_blank" rel="noopener">Canal de YouTube</a>
+    &nbsp;·&nbsp;
+    ✉ <a href="https://noquedaotraopcion.substack.com" target="_blank" rel="noopener">Newsletter Substack</a>
+    &nbsp;·&nbsp; Análisis diario de opciones sobre el mercado español
+  </div>
+</div>
+
+</body>
+</html>
