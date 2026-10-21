@@ -5,7 +5,8 @@ Proyecto GEX_DAX · Gamma y Delta Exposure de las opciones del DAX (Eurex).
 
     python3 eurex_dax.py                     # última sesión publicada por Eurex
     python3 eurex_dax.py --busdate 20261020  # una sesión concreta (Eurex guarda ~20)
-    python3 eurex_dax.py --from-csv data/eurex_odax_20261020_raw.csv --busdate 20261020
+    python3 eurex_dax.py --from-csv ejemplos/eurex_odax_20261020_raw.csv --busdate 20261020
+    python3 eurex_dax.py --backfill          # todas las sesiones que Eurex aún guarda (~20)
 
 Fuente: API JSON pública que usa la propia web de Eurex en la pestaña
 "Prices/Quotes" del producto ODAX (id 70044):
@@ -30,7 +31,8 @@ Outputs (mismo esquema que meff_gex_latest.json → reutilizable por el dashboar
     data/eurex_odax_YYYYMMDD.csv     ← datos normalizados + forward + IV calculada
     data/dax_gex_YYYYMMDD.json
     data/dax_gex_latest.json
-    data/dax_opciones_latest.json    ← IV y OI por strike (tabla del dashboard dax.html)
+    data/dax_opciones_latest.json    ← IV y OI por strike (vista tabla del dashboard)
+    data/dax_regimen_historico.csv   ← una fila por sesión: DAX, GEX, régimen, niveles
 """
 
 import argparse
@@ -38,6 +40,7 @@ import glob
 import json
 import math
 import os
+import time
 from datetime import date, datetime
 
 import numpy as np
@@ -57,6 +60,7 @@ CARPETA       = "data"
 N_PARIDAD     = 5           # strikes más cercanos al ATM usados para el forward
 PRECIO_MIN    = 0.5         # settlements por debajo (en puntos) no se usan para IV
 DIAS_HISTORICO = 60         # sesiones que se conservan en data/ (CSV y JSON con fecha)
+PAUSA_API     = 0.3         # segundos entre peticiones a Eurex
 
 MESES_ES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
             "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
@@ -65,17 +69,23 @@ MESES_ES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
 # ── Descarga ───────────────────────────────────────────────────────────────────
 
 def _get(params: dict) -> dict:
+    time.sleep(PAUSA_API)
     r = requests.get(BASE_URL, params=params, headers=HEADERS, timeout=30)
     r.raise_for_status()
     return r.json()
 
 
-def ultima_sesion() -> str:
-    """Última fecha de sesión publicada (YYYYMMDD)."""
+def sesiones_disponibles() -> list[str]:
+    """Sesiones que Eurex aún publica (YYYYMMDD), de la más reciente a la más antigua."""
     hoy = datetime.today().strftime("%Y%m%d")
     j = _get({"busdate": hoy, "filtertype": "overview"})
-    ultima = j["header"]["tradingDates"][0]          # "20-10-2026 12:00"
-    return datetime.strptime(ultima[:10], "%d-%m-%Y").strftime("%Y%m%d")
+    return [datetime.strptime(t[:10], "%d-%m-%Y").strftime("%Y%m%d")   # "20-10-2026 12:00"
+            for t in j["header"]["tradingDates"]]
+
+
+def ultima_sesion() -> str:
+    """Última fecha de sesión publicada (YYYYMMDD)."""
+    return sesiones_disponibles()[0]
 
 
 def descargar(busdate: str) -> pd.DataFrame:
@@ -252,14 +262,84 @@ def mantener_ultimos(n: int = DIAS_HISTORICO):
             os.remove(f)
 
 
+def construir_resumen():
+    """data/dax_regimen_historico.csv: una fila por sesión guardada en data/.
+
+    Los niveles de la sesión D salen de su cierre, así que sirven para operar
+    la sesión SIGUIENTE (D+1)."""
+    filas = []
+    for f in sorted(glob.glob(os.path.join(CARPETA, "dax_gex_[0-9]*.json"))):
+        try:
+            with open(f, encoding="utf-8") as fh:
+                d = json.load(fh)
+            k, kd = d["kpis_por_accion"][ACCION], d["kpis_dex_por_accion"][ACCION]
+        except (KeyError, ValueError, OSError) as exc:
+            print(f"  AVISO: {f} ignorado en el resumen ({exc})")
+            continue
+        spot, zg = k["spot"], k.get("zero_gamma")
+        filas.append({
+            "sesion":           datetime.strptime(d["meta"]["fecha_boletin"], "%d/%m/%y").strftime("%Y-%m-%d"),
+            "dax":              round(spot, 1),
+            "gex_total_meur":   round(k["gex_total"] / 1e6, 1),
+            "regimen_gex":      k["regime"],
+            "zero_gamma":       None if zg is None else round(zg),
+            "dax_vs_zero_gamma": None if zg is None else ("ENCIMA" if spot >= zg else "DEBAJO"),
+            "dist_zero_gamma_pct": None if zg is None else round((spot / zg - 1) * 100, 2),
+            "call_wall":        k["call_wall"],
+            "put_wall":         k["put_wall"],
+            "dex_total_meur":   round(kd["dex_total"] / 1e6, 1),
+            "regimen_dex":      kd["regime"],
+            "zero_delta":       None if kd.get("zero_delta") is None else round(kd["zero_delta"]),
+        })
+    if filas:
+        pd.DataFrame(filas).to_csv(os.path.join(CARPETA, "dax_regimen_historico.csv"),
+                                   sep=";", index=False, encoding="utf-8-sig")
+        print(f"  Resumen: {CARPETA}/dax_regimen_historico.csv ({len(filas)} sesiones)")
+
+
+def backfill():
+    """Descarga y procesa todas las sesiones que Eurex aún guarda y no estén en data/."""
+    sesiones = sesiones_disponibles()
+    mas_reciente = sesiones[0]
+    pendientes = [s for s in reversed(sesiones)
+                  if not os.path.exists(os.path.join(CARPETA, f"dax_gex_{s}.json"))]
+    print(f"Eurex guarda {len(sesiones)} sesiones ({sesiones[-1]} → {mas_reciente}); "
+          f"faltan {len(pendientes)}")
+    fallos = []
+    for s in pendientes:
+        try:
+            print(f"\n── Sesión {s}")
+            procesar(s, descargar(s), latest=(s == mas_reciente))
+        except Exception as exc:                     # una sesión mala no para las demás
+            print(f"  ERROR en {s}: {exc}")
+            fallos.append(s)
+    # si la sesión más reciente ya estaba guardada pero falta el latest, se copia
+    ultima = os.path.join(CARPETA, f"dax_gex_{mas_reciente}.json")
+    latest = os.path.join(CARPETA, "dax_gex_latest.json")
+    if os.path.exists(ultima) and not os.path.exists(latest):
+        with open(ultima, encoding="utf-8") as fi, open(latest, "w", encoding="utf-8") as fo:
+            fo.write(fi.read())
+    construir_resumen()
+    if fallos:
+        print(f"\nSesiones con error: {', '.join(fallos)}")
+    if fallos and len(fallos) == len(pendientes):
+        raise SystemExit(1)
+
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--busdate", help="Sesión YYYYMMDD (por defecto la última publicada)")
     ap.add_argument("--from-csv", help="Usar un CSV ya descargado en vez de la API")
+    ap.add_argument("--backfill", action="store_true",
+                    help="Descargar todas las sesiones que Eurex aún guarda y no estén en data/")
     args = ap.parse_args()
     os.makedirs(CARPETA, exist_ok=True)
+
+    if args.backfill:
+        backfill()
+        return
 
     if args.from_csv:
         if not args.busdate:
@@ -270,6 +350,13 @@ def main():
         busdate = args.busdate or ultima_sesion()
         print(f"Descargando ODAX de Eurex · sesión {busdate}")
         raw = descargar(busdate)
+    procesar(busdate, raw, latest=True)
+    construir_resumen()
+
+
+def procesar(busdate: str, raw: pd.DataFrame, latest: bool = True):
+    """Calcula GEX/DEX de una sesión y escribe sus archivos.
+    latest=True también actualiza los *_latest.json que lee el dashboard."""
     print(f"  {len(raw)} filas · {raw['exp'].nunique()} vencimientos")
 
     df_all, S0 = preparar(raw, busdate)
@@ -327,7 +414,10 @@ def main():
         "dex_por_strike_vcto":  recs(por_vencimiento(dd, "dex", S0)),
         "dex_por_strike":       recs(ds.assign(accion=ACCION, spot=S0)),
     }
-    for nombre in (f"{CARPETA}/dax_gex_{busdate}.json", f"{CARPETA}/dax_gex_latest.json"):
+    nombres = [f"{CARPETA}/dax_gex_{busdate}.json"]
+    if latest:
+        nombres.append(f"{CARPETA}/dax_gex_latest.json")
+    for nombre in nombres:
         with open(nombre, "w", encoding="utf-8") as f:
             json.dump(salida, f, ensure_ascii=False, indent=2)
 
@@ -345,10 +435,11 @@ def main():
             for r in opc.itertuples()
         ],
     }
-    with open(f"{CARPETA}/dax_opciones_latest.json", "w", encoding="utf-8") as f:
-        json.dump(opciones, f, ensure_ascii=False)
+    if latest:
+        with open(f"{CARPETA}/dax_opciones_latest.json", "w", encoding="utf-8") as f:
+            json.dump(opciones, f, ensure_ascii=False)
     mantener_ultimos()
-    print(f"✓ {csv_path} · {CARPETA}/dax_gex_latest.json · {CARPETA}/dax_opciones_latest.json")
+    print(f"✓ {busdate}" + (" · dashboard actualizado" if latest else ""))
 
 
 if __name__ == "__main__":
