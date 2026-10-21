@@ -6,12 +6,17 @@ on:
     # con los datos de la sesión anterior ya publicados por Eurex.
     - cron: "17 6 * * 2-6"
   workflow_dispatch:        # botón "Run workflow" para lanzarlo a mano
+    inputs:
+      backfill:
+        description: "Descargar todas las sesiones que Eurex aún guarda (~20)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write           # para poder hacer commit de data/
 
 concurrency:
-  group: data-commit        # no pisarse con otro workflow que también escriba en data/
+  group: dax-data           # una ejecución cada vez
   cancel-in-progress: false
 
 jobs:
@@ -25,16 +30,21 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar dependencias
-        run: pip install requests pandas numpy
+        run: pip install -r requirements.txt
 
       - name: Descargar Eurex y calcular GEX/DEX
-        run: python eurex_dax.py
+        run: |
+          if [ "${{ inputs.backfill }}" = "true" ]; then
+            python eurex_dax.py --backfill
+          else
+            python eurex_dax.py
+          fi
 
       - name: Guardar resultados en el repositorio
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898733+github-actions[bot]@users.noreply.github.com"
-          git add data/eurex_odax_*.csv data/dax_*.json
+          git add -A data/
           if git diff --cached --quiet; then
             echo "Sin cambios (Eurex aún no ha publicado una sesión nueva)."
             exit 0
