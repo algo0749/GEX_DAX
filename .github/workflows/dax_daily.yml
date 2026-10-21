@@ -1,0 +1,44 @@
+name: DAX GEX diario (Eurex)
+
+on:
+  schedule:
+    # Martes a sábado a las 06:17 UTC (08:17 en Madrid en verano, 07:17 en invierno),
+    # con los datos de la sesión anterior ya publicados por Eurex.
+    - cron: "17 6 * * 2-6"
+  workflow_dispatch:        # botón "Run workflow" para lanzarlo a mano
+
+permissions:
+  contents: write           # para poder hacer commit de data/
+
+concurrency:
+  group: data-commit        # no pisarse con otro workflow que también escriba en data/
+  cancel-in-progress: false
+
+jobs:
+  dax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests pandas numpy
+
+      - name: Descargar Eurex y calcular GEX/DEX
+        run: python eurex_dax.py
+
+      - name: Guardar resultados en el repositorio
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898733+github-actions[bot]@users.noreply.github.com"
+          git add data/eurex_odax_*.csv data/dax_*.json
+          if git diff --cached --quiet; then
+            echo "Sin cambios (Eurex aún no ha publicado una sesión nueva)."
+            exit 0
+          fi
+          git commit -m "DAX GEX $(date -u +%Y-%m-%d)"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push
