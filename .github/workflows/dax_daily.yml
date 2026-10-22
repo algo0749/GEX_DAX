@@ -8,7 +8,7 @@ on:
   workflow_dispatch:        # botón "Run workflow" para lanzarlo a mano
     inputs:
       backfill:
-        description: "Descargar todas las sesiones que Eurex aún guarda (~20)"
+        description: "Descargar (solo índice) las sesiones que Eurex aún guarda (~20)"
         type: boolean
         default: false
 
@@ -22,6 +22,7 @@ concurrency:
 jobs:
   dax:
     runs-on: ubuntu-latest
+    timeout-minutes: 60     # índice + 40 acciones: ~1.200 peticiones a Eurex (unos 10 min)
     steps:
       - uses: actions/checkout@v4
 
