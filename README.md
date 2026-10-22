@@ -1,12 +1,14 @@
 # GEX DAX · γ
 
-**Gamma Exposure (GEX) y Delta Exposure (DEX) de las opciones sobre el DAX (Eurex · ODAX), actualizado cada día.**
+**Gamma Exposure (GEX) y Delta Exposure (DEX) de las opciones sobre el DAX y sobre sus 40 acciones (Eurex), actualizado cada día.**
 
 Dashboard estático (un solo `index.html`) que se alimenta de los JSON de `data/`, regenerados cada mañana por GitHub Actions con la última sesión publicada por Eurex.
 
 ---
 
 ## Qué muestra
+
+En el selector **Subyacente**: el índice DAX y cada una de sus 40 acciones.
 
 - **γ GEX** — gamma neta de los dealers por strike, para todos los vencimientos o uno concreto.
   KPIs: spot, GEX neto, GEX de calls y puts, call wall, put wall, zero gamma y régimen.
@@ -17,6 +19,19 @@ Al elegir un vencimiento, call wall, put wall y zero gamma se recalculan **solo 
 El gráfico y la tabla muestran los strikes a ±12 % del DAX; los totales usan todos los strikes.
 
 ---
+
+## Acciones del DAX
+
+Cada acción suma todos sus productos de opciones en Eurex (americano, europeo y, si existe, el *mini* de 10 acciones).
+Los ids de producto están en el diccionario `SUBYACENTES` de `eurex_dax.py`; **si cambia la composición del DAX hay que actualizarlo**
+(el id está en el HTML de la página del producto en eurex.com, atributo `data-i18n` del bloque `option-prices`).
+
+- Contrato: 100 acciones (mini: 10). GEX en euros.
+- La mayoría son opciones **americanas**: Black-Scholes es una aproximación; la IV se calcula solo con opciones fuera de dinero, donde el ejercicio anticipado pesa poco.
+- El forward por paridad put-call recoge de forma aproximada los dividendos.
+- Se descartan las series ajustadas por operaciones corporativas (`versionNumber ≠ 0`).
+- Una acción sin datos suficientes ese día se omite y el resto sigue.
+- El histórico con fecha (`dax_gex_YYYYMMDD.json`) guarda solo el índice; las acciones solo están en `dax_gex_latest.json`.
 
 ## De dónde salen los datos
 
@@ -67,6 +82,7 @@ Validación con la sesión del 20/10/2026: DAX implícito 25.317 frente a un cie
     ├── dax_gex_latest.json           ← GEX + DEX (pestañas γ y Δ)
     ├── dax_opciones_latest.json      ← IV y OI por strike (vista tabla)
     ├── dax_gex_YYYYMMDD.json         ← histórico (últimas 60 sesiones)
+    ├── dax_regimen_historico.csv     ← una fila por sesión: DAX, GEX, régimen, niveles
     └── eurex_odax_YYYYMMDD.csv       ← datos normalizados con forward e IV
 ```
 
@@ -77,14 +93,29 @@ Validación con la sesión del 20/10/2026: DAX implícito 25.317 frente a un cie
 ```bash
 pip install -r requirements.txt
 
-python eurex_dax.py                       # última sesión publicada por Eurex
+python eurex_dax.py                       # última sesión: índice + 40 acciones (~10 min)
+python eurex_dax.py --solo-indice         # solo el DAX (1 min)
 python eurex_dax.py --busdate 20261016    # una sesión concreta (Eurex guarda ~20)
 python eurex_dax.py --from-csv ejemplos/eurex_odax_20261020_raw.csv --busdate 20261020   # sin red
+python eurex_dax.py --backfill            # sesiones del índice que Eurex aún guarda (~20)
 
 python -m http.server 8080                # y abre http://localhost:8080/
 ```
 
 `index.html` no se puede abrir con doble clic (`file://`): el navegador bloquea la carga de los JSON. Hay que servirlo con el comando anterior o desde GitHub Pages.
+
+---
+
+## Histórico del régimen
+
+`data/dax_regimen_historico.csv` tiene una fila por sesión guardada (separador `;`):
+`sesion`, `dax`, `gex_total_meur`, `regimen_gex`, `zero_gamma`, `dax_vs_zero_gamma`, `dist_zero_gamma_pct`,
+`call_wall`, `put_wall`, `dex_total_meur`, `regimen_dex`, `zero_delta`.
+
+Los niveles de la sesión D salen de su cierre: sirven para operar la sesión **siguiente**.
+
+Eurex solo guarda unas 20 sesiones. Para no perderlas, lanza una vez el workflow a mano con la casilla
+**backfill** marcada (Actions → *DAX GEX diario (Eurex)* → *Run workflow*). Las sesiones ya guardadas se saltan.
 
 ---
 

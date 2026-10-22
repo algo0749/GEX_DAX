@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GEX DAX · Gamma Exposure opciones DAX (Eurex)</title>
+  <title>GEX DAX · Gamma Exposure opciones DAX (Eurex) | No Queda Otra Opción</title>
 
   <!-- ── SEO básico ── -->
-  <meta name="description" content="Análisis diario de Gamma Exposure (GEX) y Delta Exposure (DEX) sobre opciones del DAX en Eurex (ODAX): perfil por strike, call wall, put wall y zero gamma por vencimiento, semanales incluidos." />
+  <meta name="description" content="Análisis diario de Gamma Exposure (GEX) y Delta Exposure (DEX) sobre opciones del DAX y de sus 40 acciones en Eurex: perfil por strike, call wall, put wall y zero gamma por vencimiento." />
   <meta name="keywords" content="GEX DAX, gamma exposure DAX, opciones DAX, ODAX, Eurex, zero gamma DAX, call wall, put wall" />
+  <meta name="author" content="No Queda Otra Opción" />
   <meta name="robots" content="index, follow" />
 
   <!-- ── Canonical ── -->
@@ -16,12 +17,14 @@
   <meta property="og:type"        content="website" />
   <meta property="og:title"       content="GEX DAX · Gamma Exposure opciones DAX (Eurex)" />
   <meta property="og:description" content="Gamma Exposure (GEX) diario sobre opciones del DAX en Eurex: perfil por strike, call wall, put wall y zero gamma." />
+  <meta property="og:site_name"   content="No Queda Otra Opción" />
   <meta property="og:locale"      content="es_ES" />
 
   <!-- ── Twitter / X Card ── -->
   <meta name="twitter:card"        content="summary" />
   <meta name="twitter:title"       content="GEX DAX · Gamma Exposure opciones DAX (Eurex)" />
   <meta name="twitter:description" content="Gamma Exposure (GEX) diario sobre opciones del DAX en Eurex." />
+  <meta name="twitter:site"        content="@noquedaotraopcion" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,23 +35,23 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:         #ffffff;
-      --bg2:        #f8fafc;
-      --bg3:        #f1f5f9;
-      --border:     #e2e8f0;
-      --border2:    #cbd5e1;
-      --text:       #0f172a;
+      --bg:         #050508;
+      --bg2:        #0d0d14;
+      --bg3:        #13131e;
+      --border:     #1e1e2e;
+      --border2:    #2a2a40;
+      --text:       #e2e8f0;
       --muted:      #64748b;
-      --call:       #16a34a;
-      --call-dim:   rgba(22,163,74,.12);
-      --put:        #dc2626;
-      --put-dim:    rgba(220,38,38,.12);
-      --spot:       #d97706;
-      --spot-dim:   rgba(217,119,6,.12);
-      --violet:     #7c3aed;
-      --violet-dim: rgba(124,58,237,.12);
-      --accent:     #4f46e5;
-      --cyan:       #0891b2;
+      --call:       #22c55e;
+      --call-dim:   rgba(34,197,94,.15);
+      --put:        #ef4444;
+      --put-dim:    rgba(239,68,68,.15);
+      --spot:       #f59e0b;
+      --spot-dim:   rgba(245,158,11,.15);
+      --violet:     #a78bfa;
+      --violet-dim: rgba(167,139,250,.15);
+      --accent:     #6366f1;
+      --cyan:       #06b6d4;
     }
 
     body {
@@ -608,6 +611,8 @@
 <!-- ── Header ── -->
 <div class="header">
   <h1>
+    <span class="brand">NO QUEDA OTRA OPCIÓN</span>
+    <span class="dot">·</span>
     <span class="subbrand">DAX</span>
     <span class="dot">·</span>
     <span class="title">EUREX · GAMMA EXPOSURE</span>
@@ -618,6 +623,7 @@
       <span class="dot-pulse"></span>
       <span class="dot-pulse"></span>
     </span>
+    <span class="meta-update">Actualización: diaria con la sesión anterior de Eurex · <a href="https://gammaibex.noquedaotraopcion.com/" style="color:var(--accent);text-decoration:none">Ver IBEX (MEFF) →</a></span>
   </div>
   <button class="ham-btn" onclick="hamOpen()" aria-label="Menú">
     <span></span><span></span><span></span>
@@ -637,6 +643,9 @@
     <button class="ham-nav-btn"        id="hbtn-dex"      onclick="hamSwitch('dex')">
       <span class="ham-nav-icon">Δ</span> DEX
     </button>
+    <a class="ham-nav-btn" href="https://gammaibex.noquedaotraopcion.com/" style="text-decoration:none">
+      <span class="ham-nav-icon">↩</span> GEX IBEX (MEFF)
+    </a>
     <button class="ham-nav-btn"        id="hbtn-glosario" onclick="hamSwitch('glosario')">
       <span class="ham-nav-icon">≡</span> GLOSARIO
     </button>
@@ -1096,7 +1105,8 @@ function el(id) { return document.getElementById(id); }
 
 // KPIs del vencimiento elegido (call/put wall y zero gamma/delta propios);
 // con "Todos los vencimientos" se usan los del agregado.
-const RANGO_STRIKES = 0.12;   // strikes mostrados: ±12% alrededor del DAX
+// strikes mostrados en gráfico y tabla: ±12% en el índice, ±30% en las acciones (más volátiles)
+function rangoStrikes(activo) { return activo === 'DAX' ? 0.12 : 0.30; }
 function gexKpis() {
   const d = state.gex.data, a = state.gex.activo, v = el('gex-sel-vcto').value;
   if (!d) return {};
@@ -1241,7 +1251,7 @@ function gexGetData(todos = false) {
     ? (d.gex_por_strike || []).filter(r => r.accion === activo)
     : (d.gex_por_strike_vcto || []).filter(r => r.accion === activo && r.fecha_vencimiento === vcto);
   const spot = gexKpis().spot;
-  if (spot && !todos) rows = rows.filter(r => Math.abs(r.strike / spot - 1) <= RANGO_STRIKES);
+  if (spot && !todos) rows = rows.filter(r => Math.abs(r.strike / spot - 1) <= rangoStrikes(state.gex.activo));
   return rows.sort((a, b) => a.strike - b.strike);
 }
 
@@ -1259,9 +1269,9 @@ function gexUpdateKPIs(rows, kpis) {
   const vcto   = el('gex-sel-vcto').value;
   const spot   = kpis.spot;
 
-  const totCall  = rows.reduce((s, r) => s + (r.call_gex || 0), 0);
-  const totPut   = rows.reduce((s, r) => s + (r.put_gex  || 0), 0);
-  const totNet   = rows.reduce((s, r) => s + (r.net_gex  || 0), 0);
+  const totCall  = kpis.gex_call != null ? kpis.gex_call : rows.reduce((s, r) => s + (r.call_gex || 0), 0);
+  const totPut   = kpis.gex_put != null ? kpis.gex_put : rows.reduce((s, r) => s + (r.put_gex || 0), 0);
+  const totNet   = kpis.gex_total != null ? kpis.gex_total : rows.reduce((s, r) => s + (r.net_gex || 0), 0);
   const totGross = Math.abs(totCall) + Math.abs(totPut);
   const absPut   = Math.abs(totPut);
   const ratio    = absPut > 0 ? (Math.abs(totCall) / absPut).toFixed(2) : '—';
@@ -1404,8 +1414,8 @@ function gexRenderGraph(rows, kpis) {
         legend: { display: mode === 'callput',
           labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 }, boxWidth: 12 } },
         tooltip: {
-          backgroundColor: '#ffffff', borderColor: '#2a2a40', borderWidth: 1,
-          titleColor: '#0f172a', bodyColor: '#94a3b8',
+          backgroundColor: '#13131e', borderColor: '#2a2a40', borderWidth: 1,
+          titleColor: '#e2e8f0', bodyColor: '#94a3b8',
           titleFont: { family: 'JetBrains Mono', size: 11 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
           callbacks: {
             title: items => 'Strike ' + Number(items[0].label).toLocaleString('es-ES'),
@@ -1416,9 +1426,9 @@ function gexRenderGraph(rows, kpis) {
       scales: {
         x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 20,
               callback: v => { const l = labels[v]; return l >= 1000 ? l.toLocaleString('es-ES') : l; } },
-             grid: { color: '#e5e7eb' } },
+             grid: { color: '#1e1e2e' } },
         y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtGex(v) },
-             grid: { color: '#e5e7eb' } },
+             grid: { color: '#1e1e2e' } },
       },
     },
     plugins: [gexLinesPlugin],
@@ -1544,7 +1554,7 @@ function dexGetData(todos = false) {
     ? (d.dex_por_strike || []).filter(r => r.accion === activo)
     : (d.dex_por_strike_vcto || []).filter(r => r.accion === activo && r.fecha_vencimiento === vcto);
   const spot = dexKpis().spot;
-  if (spot && !todos) rows = rows.filter(r => Math.abs(r.strike / spot - 1) <= RANGO_STRIKES);
+  if (spot && !todos) rows = rows.filter(r => Math.abs(r.strike / spot - 1) <= rangoStrikes(state.dex.activo));
   return rows.sort((a, b) => a.strike - b.strike);
 }
 
@@ -1558,9 +1568,9 @@ function dexRefresh() {
 
 function dexUpdateKPIs(rows, kpis) {
   const activo = state.dex.activo, vcto = el('dex-sel-vcto').value, spot = kpis.spot;
-  const totCall = rows.reduce((s, r) => s + (r.call_dex || 0), 0);
-  const totPut  = rows.reduce((s, r) => s + (r.put_dex  || 0), 0);
-  const totNet  = rows.reduce((s, r) => s + (r.net_dex  || 0), 0);
+  const totCall = kpis.dex_call != null ? kpis.dex_call : rows.reduce((s, r) => s + (r.call_dex || 0), 0);
+  const totPut  = kpis.dex_put != null ? kpis.dex_put : rows.reduce((s, r) => s + (r.put_dex || 0), 0);
+  const totNet  = kpis.dex_total != null ? kpis.dex_total : rows.reduce((s, r) => s + (r.net_dex || 0), 0);
   const totGross = Math.abs(totCall) + Math.abs(totPut);
   const ratio = Math.abs(totPut) > 0 ? (Math.abs(totCall) / Math.abs(totPut)).toFixed(2) : '—';
 
@@ -1681,8 +1691,8 @@ function dexRenderGraph(rows, kpis) {
         legend: { display: mode === 'callput',
           labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 }, boxWidth: 12 } },
         tooltip: {
-          backgroundColor: '#ffffff', borderColor: '#2a2a40', borderWidth: 1,
-          titleColor: '#0f172a', bodyColor: '#94a3b8',
+          backgroundColor: '#13131e', borderColor: '#2a2a40', borderWidth: 1,
+          titleColor: '#e2e8f0', bodyColor: '#94a3b8',
           titleFont: { family: 'JetBrains Mono', size: 11 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
           callbacks: {
             title: items => 'Strike ' + Number(items[0].label).toLocaleString('es-ES'),
@@ -1693,9 +1703,9 @@ function dexRenderGraph(rows, kpis) {
       scales: {
         x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 20,
               callback: v => { const l = labels[v]; return l >= 1000 ? l.toLocaleString('es-ES') : l; } },
-             grid: { color: '#e5e7eb' } },
+             grid: { color: '#1e1e2e' } },
         y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtGex(v) },
-             grid: { color: '#e5e7eb' } },
+             grid: { color: '#1e1e2e' } },
       },
     },
     plugins: [dexLinesPlugin],
@@ -1811,8 +1821,8 @@ function hisRender() {
         legend: { display: true, position: 'top',
           labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 }, boxWidth: 12 } },
         tooltip: {
-          backgroundColor: '#ffffff', borderColor: '#2a2a40', borderWidth: 1,
-          titleColor: '#0f172a', bodyColor: '#94a3b8',
+          backgroundColor: '#13131e', borderColor: '#2a2a40', borderWidth: 1,
+          titleColor: '#e2e8f0', bodyColor: '#94a3b8',
           titleFont: { family: 'JetBrains Mono', size: 11 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
           callbacks: {
             title: items => 'Boletín ' + fechas[items[0].dataIndex],
@@ -1821,8 +1831,8 @@ function hisRender() {
         },
       },
       scales: {
-        x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 15 }, grid: { color: '#e5e7eb' } },
-        y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtNum(v) }, grid: { color: '#e5e7eb' } },
+        x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 15 }, grid: { color: '#1e1e2e' } },
+        y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtNum(v) }, grid: { color: '#1e1e2e' } },
       },
     },
   };
@@ -1890,9 +1900,21 @@ loadAll();
 <div class="footer">
   <div class="footer-line">
     Tasa libre de riesgo BCE: <span id="footer-tasa">2,5%</span>
-    &nbsp;·&nbsp; Vencimientos semanales y mensuales · 5 €/punto
-    &nbsp;·&nbsp; Fuente: Eurex (ODAX) · IV y spot implícitos calculados
+    &nbsp;·&nbsp; Vencimientos semanales y mensuales · DAX 5 €/punto · acciones 100 acciones/contrato
+    &nbsp;·&nbsp; Fuente: Eurex · IV y spot implícitos calculados
     &nbsp;·&nbsp; GEX = Gamma × OI × Multiplicador × Spot²
+  </div>
+  <div class="footer-line">
+    * Todos los vencimientos
+    &nbsp;·&nbsp; <a href="mailto:joseantonio@noquedaotraopcion.com">joseantonio@noquedaotraopcion.com</a>
+  </div>
+  <div class="footer-line footer-cta">
+    🌐 <a href="https://noquedaotraopcion.com" target="_blank" rel="noopener">noquedaotraopcion.com</a>
+    &nbsp;·&nbsp;
+    ▶ <a href="https://youtube.com/@noquedaotraopcion" target="_blank" rel="noopener">Canal de YouTube</a>
+    &nbsp;·&nbsp;
+    ✉ <a href="https://noquedaotraopcion.substack.com" target="_blank" rel="noopener">Newsletter Substack</a>
+    &nbsp;·&nbsp; Análisis diario de opciones sobre el mercado español
   </div>
 </div>
 
