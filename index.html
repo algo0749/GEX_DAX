@@ -27,23 +27,23 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:         #050508;
-      --bg2:        #0d0d14;
-      --bg3:        #13131e;
-      --border:     #1e1e2e;
-      --border2:    #2a2a40;
-      --text:       #e2e8f0;
+      --bg:         #ffffff;
+      --bg2:        #f8fafc;
+      --bg3:        #f1f5f9;
+      --border:     #e2e8f0;
+      --border2:    #cbd5e1;
+      --text:       #0f172a;
       --muted:      #64748b;
-      --call:       #22c55e;
-      --call-dim:   rgba(34,197,94,.15);
-      --put:        #ef4444;
-      --put-dim:    rgba(239,68,68,.15);
-      --spot:       #f59e0b;
-      --spot-dim:   rgba(245,158,11,.15);
-      --violet:     #a78bfa;
-      --violet-dim: rgba(167,139,250,.15);
-      --accent:     #6366f1;
-      --cyan:       #06b6d4;
+      --call:       #16a34a;
+      --call-dim:   rgba(22,163,74,.12);
+      --put:        #dc2626;
+      --put-dim:    rgba(220,38,38,.12);
+      --spot:       #d97706;
+      --spot-dim:   rgba(217,119,6,.12);
+      --violet:     #7c3aed;
+      --violet-dim: rgba(124,58,237,.12);
+      --accent:     #4f46e5;
+      --cyan:       #0891b2;
     }
 
     body {
@@ -1401,8 +1401,8 @@ function gexRenderGraph(rows, kpis) {
         legend: { display: mode === 'callput',
           labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 }, boxWidth: 12 } },
         tooltip: {
-          backgroundColor: '#13131e', borderColor: '#2a2a40', borderWidth: 1,
-          titleColor: '#e2e8f0', bodyColor: '#94a3b8',
+          backgroundColor: '#ffffff', borderColor: '#2a2a40', borderWidth: 1,
+          titleColor: '#0f172a', bodyColor: '#94a3b8',
           titleFont: { family: 'JetBrains Mono', size: 11 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
           callbacks: {
             title: items => 'Strike ' + Number(items[0].label).toLocaleString('es-ES'),
@@ -1413,9 +1413,9 @@ function gexRenderGraph(rows, kpis) {
       scales: {
         x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 20,
               callback: v => { const l = labels[v]; return l >= 1000 ? l.toLocaleString('es-ES') : l; } },
-             grid: { color: '#1e1e2e' } },
+             grid: { color: '#e5e7eb' } },
         y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtGex(v) },
-             grid: { color: '#1e1e2e' } },
+             grid: { color: '#e5e7eb' } },
       },
     },
     plugins: [gexLinesPlugin],
@@ -1678,8 +1678,8 @@ function dexRenderGraph(rows, kpis) {
         legend: { display: mode === 'callput',
           labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 }, boxWidth: 12 } },
         tooltip: {
-          backgroundColor: '#13131e', borderColor: '#2a2a40', borderWidth: 1,
-          titleColor: '#e2e8f0', bodyColor: '#94a3b8',
+          backgroundColor: '#ffffff', borderColor: '#2a2a40', borderWidth: 1,
+          titleColor: '#0f172a', bodyColor: '#94a3b8',
           titleFont: { family: 'JetBrains Mono', size: 11 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
           callbacks: {
             title: items => 'Strike ' + Number(items[0].label).toLocaleString('es-ES'),
@@ -1690,9 +1690,9 @@ function dexRenderGraph(rows, kpis) {
       scales: {
         x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 20,
               callback: v => { const l = labels[v]; return l >= 1000 ? l.toLocaleString('es-ES') : l; } },
-             grid: { color: '#1e1e2e' } },
+             grid: { color: '#e5e7eb' } },
         y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtGex(v) },
-             grid: { color: '#1e1e2e' } },
+             grid: { color: '#e5e7eb' } },
       },
     },
     plugins: [dexLinesPlugin],
@@ -1808,8 +1808,8 @@ function hisRender() {
         legend: { display: true, position: 'top',
           labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 }, boxWidth: 12 } },
         tooltip: {
-          backgroundColor: '#13131e', borderColor: '#2a2a40', borderWidth: 1,
-          titleColor: '#e2e8f0', bodyColor: '#94a3b8',
+          backgroundColor: '#ffffff', borderColor: '#2a2a40', borderWidth: 1,
+          titleColor: '#0f172a', bodyColor: '#94a3b8',
           titleFont: { family: 'JetBrains Mono', size: 11 }, bodyFont: { family: 'JetBrains Mono', size: 11 },
           callbacks: {
             title: items => 'Boletín ' + fechas[items[0].dataIndex],
@@ -1818,8 +1818,8 @@ function hisRender() {
         },
       },
       scales: {
-        x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 15 }, grid: { color: '#1e1e2e' } },
-        y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtNum(v) }, grid: { color: '#1e1e2e' } },
+        x: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 15 }, grid: { color: '#e5e7eb' } },
+        y: { ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => fmtNum(v) }, grid: { color: '#e5e7eb' } },
       },
     },
   };
