@@ -2,9 +2,10 @@ name: DAX GEX diario (Eurex)
 
 on:
   schedule:
-    # Martes a sábado a las 06:17 UTC (08:17 en Madrid en verano, 07:17 en invierno),
     # con los datos de la sesión anterior ya publicados por Eurex.
-    - cron: "17 6 * * 2-6"
+    - cron: "3 22 * * 1-5"
+    # Respaldo: martes a sábado a las 05:17 UTC por si la de la noche falla o Eurex aún no había publicado.
+    - cron: "17 5 * * 2-6"
   workflow_dispatch:        # botón "Run workflow" para lanzarlo a mano
     inputs:
       backfill:
