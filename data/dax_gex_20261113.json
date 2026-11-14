@@ -1,7 +1,7 @@
 {
  "meta": {
   "fecha_boletin": "13/11/26",
-  "generado": "2026-11-14 02:25",
+  "generado": "2026-11-14 12:40",
   "tasa_libre_riesgo": 0.025,
   "nota_tasa": "Tipo BCE. Revisar periodicamente.",
   "fuente": "Eurex · IV y spot implícitos calculados"
@@ -34,9 +34,9 @@
    "spot": 26757.709531637476,
    "call_wall": 27000.0,
    "put_wall": 25500.0,
-   "zero_gamma": 26233.722897702777,
-   "gex_total": 61930489194.380875,
-   "gex_call": 223377856638.92325,
+   "zero_gamma": 26233.722897702773,
+   "gex_total": 61930489194.38092,
+   "gex_call": 223377856638.9233,
    "gex_put": -161447367444.54236,
    "regime": "POSITIVO",
    "multiplicador": 5
@@ -49,8 +49,8 @@
     "call_wall": 26800.0,
     "put_wall": 26800.0,
     "zero_gamma": 26168.53891881374,
-    "gex_total": 30817654892.47969,
-    "gex_call": 73204679468.12012,
+    "gex_total": 30817654892.47973,
+    "gex_call": 73204679468.12015,
     "gex_put": -42387024575.640434,
     "regime": "POSITIVO",
     "multiplicador": 5
@@ -128,7 +128,7 @@
     "zero_gamma": 26722.916013274214,
     "gex_total": 70271580.74869156,
     "gex_call": 8721973944.46556,
-    "gex_put": -8651702363.71687,
+    "gex_put": -8651702363.716871,
     "regime": "POSITIVO",
     "multiplicador": 5
    },
@@ -137,7 +137,7 @@
     "call_wall": 26200.0,
     "put_wall": 26000.0,
     "zero_gamma": null,
-    "gex_total": -962175105.673198,
+    "gex_total": -962175105.6731982,
     "gex_call": 1204873102.387712,
     "gex_put": -2167048208.06091,
     "regime": "NEGATIVO",
@@ -13099,9 +13099,9 @@
     "call_wall": 25500.0,
     "put_wall": 26800.0,
     "zero_delta": 26077.295571639886,
-    "dex_total": 3102456256.7629795,
+    "dex_total": 3102456256.762979,
     "dex_call": 3893119922.4712234,
-    "dex_put": -790663665.7082435,
+    "dex_put": -790663665.7082436,
     "regime": "LONG"
    },
    "27-Nov-26 (W)": {
@@ -13109,7 +13109,7 @@
     "call_wall": 26200.0,
     "put_wall": 27000.0,
     "zero_delta": 26224.84715639106,
-    "dex_total": 378587320.9154266,
+    "dex_total": 378587320.91542673,
     "dex_call": 548584394.2567095,
     "dex_put": -169997073.34128264,
     "regime": "LONG"
@@ -13119,9 +13119,9 @@
     "call_wall": 26200.0,
     "put_wall": 26400.0,
     "zero_delta": 25709.11774849257,
-    "dex_total": 531989001.1944723,
-    "dex_call": 600954206.7141665,
-    "dex_put": -68965205.5196942,
+    "dex_total": 531989001.1944724,
+    "dex_call": 600954206.7141664,
+    "dex_put": -68965205.51969418,
     "regime": "LONG"
    },
    "11-Dic-26 (W)": {
