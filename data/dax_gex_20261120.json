@@ -1,7 +1,7 @@
 {
  "meta": {
   "fecha_boletin": "20/11/26",
-  "generado": "2026-11-21 03:51",
+  "generado": "2026-11-21 14:31",
   "tasa_libre_riesgo": 0.025,
   "nota_tasa": "Tipo BCE. Revisar periodicamente.",
   "fuente": "Eurex · IV y spot implícitos calculados"
@@ -49,7 +49,7 @@
     "call_wall": 25200.0,
     "put_wall": 25000.0,
     "zero_gamma": 25849.254499815386,
-    "gex_total": -6731361290.087765,
+    "gex_total": -6731361290.087764,
     "gex_call": 5012154466.375333,
     "gex_put": -11743515756.463099,
     "regime": "NEGATIVO",
@@ -192,9 +192,9 @@
     "call_wall": 33000.0,
     "put_wall": 23000.0,
     "zero_gamma": 22214.33917989842,
-    "gex_total": 72954667.00895801,
+    "gex_total": 72954667.00895804,
     "gex_call": 171008163.34817365,
-    "gex_put": -98053496.33921565,
+    "gex_put": -98053496.33921562,
     "regime": "POSITIVO",
     "multiplicador": 5
    },
@@ -12755,8 +12755,8 @@
     "call_wall": 26200.0,
     "put_wall": 25500.0,
     "zero_delta": 25959.451529954113,
-    "dex_total": -670163715.7498734,
-    "dex_call": 90434319.07092482,
+    "dex_total": -670163715.7498733,
+    "dex_call": 90434319.07092483,
     "dex_put": -760598034.8207982,
     "regime": "SHORT"
    },
@@ -12777,7 +12777,7 @@
     "zero_delta": 25464.58814796551,
     "dex_total": -4229352277.578577,
     "dex_call": 5086622154.824708,
-    "dex_put": -9315974432.40329,
+    "dex_put": -9315974432.403288,
     "regime": "SHORT"
    },
    "23-Dic-26 (W)": {
