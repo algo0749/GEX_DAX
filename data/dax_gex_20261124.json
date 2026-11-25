@@ -1,7 +1,7 @@
 {
  "meta": {
   "fecha_boletin": "24/11/26",
-  "generado": "2026-11-25 05:11",
+  "generado": "2026-11-25 16:24",
   "tasa_libre_riesgo": 0.025,
   "nota_tasa": "Tipo BCE. Revisar periodicamente.",
   "fuente": "Eurex · IV y spot implícitos calculados"
@@ -52,8 +52,8 @@
     "put_wall": 25000.0,
     "zero_gamma": 25555.926651932397,
     "gex_total": -5984877061.762932,
-    "gex_call": 8069203172.938397,
-    "gex_put": -14054080234.70133,
+    "gex_call": 8069203172.938399,
+    "gex_put": -14054080234.701332,
     "regime": "NEGATIVO",
     "multiplicador": 5
    },
@@ -62,7 +62,7 @@
     "call_wall": 26200.0,
     "put_wall": 25500.0,
     "zero_gamma": 25778.473665084228,
-    "gex_total": -4628022323.657123,
+    "gex_total": -4628022323.6571245,
     "gex_call": 4693299629.661534,
     "gex_put": -9321321953.31866,
     "regime": "NEGATIVO",
@@ -95,9 +95,9 @@
     "call_wall": 25400.0,
     "put_wall": 25750.0,
     "zero_gamma": 26286.01482939686,
-    "gex_total": -246992435.42640617,
+    "gex_total": -246992435.42640612,
     "gex_call": 254882009.3974082,
-    "gex_put": -501874444.82381433,
+    "gex_put": -501874444.8238143,
     "regime": "NEGATIVO",
     "multiplicador": 5
    },
@@ -117,9 +117,9 @@
     "call_wall": 26000.0,
     "put_wall": 24800.0,
     "zero_gamma": 26076.056856750787,
-    "gex_total": -4682912813.060453,
+    "gex_total": -4682912813.060454,
     "gex_call": 5382023731.53562,
-    "gex_put": -10064936544.596071,
+    "gex_put": -10064936544.596073,
     "regime": "NEGATIVO",
     "multiplicador": 5
    },
@@ -128,7 +128,7 @@
     "call_wall": 25700.0,
     "put_wall": 25500.0,
     "zero_gamma": 24132.806295869857,
-    "gex_total": 30242038.442934178,
+    "gex_total": 30242038.442934163,
     "gex_call": 191917356.0424228,
     "gex_put": -161675317.59948868,
     "regime": "POSITIVO",
@@ -149,7 +149,7 @@
     "spot": 25015.882575129766,
     "call_wall": 26000.0,
     "put_wall": 20800.0,
-    "zero_gamma": 26679.33925581817,
+    "zero_gamma": 26679.339255818173,
     "gex_total": -3521882611.754509,
     "gex_call": 7260143182.517856,
     "gex_put": -10782025794.272362,
@@ -172,7 +172,7 @@
     "call_wall": 26000.0,
     "put_wall": 26500.0,
     "zero_gamma": null,
-    "gex_total": -2568608441.3313513,
+    "gex_total": -2568608441.331351,
     "gex_call": 1365008097.514775,
     "gex_put": -3933616538.8461256,
     "regime": "NEGATIVO",
@@ -14298,7 +14298,7 @@
    "call_wall": 25000.0,
    "put_wall": 25500.0,
    "zero_delta": 25780.801406378177,
-   "dex_total": -10515652643.823421,
+   "dex_total": -10515652643.823423,
    "dex_call": 10069728243.127975,
    "dex_put": -20585380886.951397,
    "regime": "SHORT"
@@ -14312,7 +14312,7 @@
     "put_wall": 25500.0,
     "zero_delta": 25730.46925256046,
     "dex_total": -854404126.6518939,
-    "dex_call": 159518526.06684554,
+    "dex_call": 159518526.0668456,
     "dex_put": -1013922652.7187394,
     "regime": "SHORT"
    },
@@ -14351,9 +14351,9 @@
     "call_wall": 25400.0,
     "put_wall": 26050.0,
     "zero_delta": 26110.16023750938,
-    "dex_total": -37263916.988346316,
+    "dex_total": -37263916.98834631,
     "dex_call": 9429967.066861775,
-    "dex_put": -46693884.055208094,
+    "dex_put": -46693884.05520809,
     "regime": "SHORT"
    },
    "30-Dic-26 (W)": {
@@ -14423,7 +14423,7 @@
     "zero_delta": 27823.86548782229,
     "dex_total": -522828426.2653667,
     "dex_call": 364116071.40812504,
-    "dex_put": -886944497.6734917,
+    "dex_put": -886944497.6734918,
     "regime": "SHORT"
    },
    "Mar-28": {
