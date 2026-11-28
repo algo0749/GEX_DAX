@@ -1,7 +1,7 @@
 {
  "meta": {
   "fecha_boletin": "27/11/26",
-  "generado": "2026-11-28 04:09",
+  "generado": "2026-11-28 14:43",
   "tasa_libre_riesgo": 0.025,
   "nota_tasa": "Tipo BCE. Revisar periodicamente.",
   "fuente": "Eurex · IV y spot implícitos calculados"
